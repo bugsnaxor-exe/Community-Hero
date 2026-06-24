@@ -1,0 +1,25 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/community-hero-backend', '.']
+  
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/community-hero-backend']
+  
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'community-hero-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/community-hero-backend'
+      - '--region'
+      - 'us-central1'
+      - '--allow-unauthenticated'
+      - '--set-secrets=DATABASE_URL=DATABASE_URL:latest,SECRET_KEY=SECRET_KEY:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest'
+
+images:
+  - 'gcr.io/$PROJECT_ID/community-hero-backend'
