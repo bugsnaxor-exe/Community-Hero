@@ -27,12 +27,9 @@ class AuthRepository {
       final response = await _dio.post(
         '/auth/login',
         data: {
-          'username': email, // FastAPI OAuth2 expects 'username' field
+          'email': email,
           'password': password,
         },
-        options: Options(
-          contentType: Headers.formUrlEncodedContentType, // Required by OAuth2PasswordRequestForm
-        ),
       );
 
       final token = response.data['access_token'];
@@ -56,7 +53,7 @@ class AuthRepository {
         data: {
           'email': email,
           'password': password,
-          'username': username,
+          'name': username,
         },
       );
       
