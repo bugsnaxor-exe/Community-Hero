@@ -14,11 +14,14 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Community Hero'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Community Hero', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none),
+            icon: const Icon(Icons.notifications_none, color: Colors.white),
             onPressed: () {},
           ),
         ],
@@ -115,11 +118,12 @@ class HomeScreen extends ConsumerWidget {
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
           ),
           TextButton(
             onPressed: () => context.go('/feed'),
-            child: const Text('See All'),
+            child: const Text('See All', style: TextStyle(color: Colors.white70)),
           ),
         ],
       ),
@@ -139,7 +143,7 @@ class HomeScreen extends ConsumerWidget {
             physics: const NeverScrollableScrollPhysics(),
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: isSmall ? 1.5 : 2.0,
+            childAspectRatio: isSmall ? 1.0 : 1.2,
             children: [
               StatisticsCard(
                 title: 'Total Issues',

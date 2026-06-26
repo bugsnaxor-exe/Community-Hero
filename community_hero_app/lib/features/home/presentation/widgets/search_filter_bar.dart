@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/glassmorphism/glass_container.dart';
 
 class SearchFilterBar extends StatelessWidget {
   const SearchFilterBar({super.key});
@@ -8,26 +9,35 @@ class SearchFilterBar extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search issues...',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
+          child: GlassContainer(
+            borderRadius: 30,
+            blurX: 10,
+            blurY: 10,
+            opacity: 0.1,
+            backgroundColor: Colors.white,
+            borderWidth: 1.0,
+            borderColor: Colors.white24,
+            child: TextField(
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Search issues...',
+                hintStyle: const TextStyle(color: Colors.white60),
+                prefixIcon: const Icon(Icons.search, color: Colors.white60),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20),
             ),
           ),
         ),
         const SizedBox(width: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
+        GlassContainer(
+          borderRadius: 16,
+          blurX: 10,
+          blurY: 10,
+          opacity: 0.2,
+          backgroundColor: Theme.of(context).primaryColor,
           child: IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.white),
             onPressed: () {

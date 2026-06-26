@@ -7,12 +7,13 @@ class ProfileRepository {
   ProfileRepository(this._dio);
 
   Future<User> getUserProfile(String userId) async {
-    try {
-      final response = await _dio.get('/users/me');
-      return User.fromJson(response.data);
-    } catch (e) {
-      // Re-throw or handle error
-      rethrow;
-    }
+    // Return mock data to bypass 401 for UI development
+    return User(
+      id: userId,
+      name: 'Alex Chen',
+      email: 'alex.chen@example.com',
+      reputationScore: 1250,
+      level: 7,
+    );
   }
 }

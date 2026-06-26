@@ -13,10 +13,13 @@ class ProfileScreen extends ConsumerWidget {
     final profileState = ref.watch(profileControllerProvider(userId));
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Profile'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Settings', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.settings, color: Colors.white), onPressed: () {}),
         ],
       ),
       body: profileState.when(
@@ -28,9 +31,9 @@ class ProfileScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   _ProfileHeader(user: user),
-                  const Divider(height: 1),
+                  const Divider(height: 1, color: Colors.white12),
                   _GamificationStats(user: user),
-                  const Divider(height: 1),
+                  const Divider(height: 1, color: Colors.white12),
                   _RecentActivityTab(),
                 ],
               ),
@@ -79,11 +82,11 @@ class _ProfileHeader extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             user.name ?? 'Unknown Hero',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
           ),
           Text(
             user.email,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
           ),
         ],
       ),
@@ -111,14 +114,14 @@ class _GamificationStats extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Level ${user.level}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              Text('${user.reputationScore} / $nextLevelXP XP', style: const TextStyle(color: Colors.grey)),
+              Text('Level ${user.level}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+              Text('${user.reputationScore} / $nextLevelXP XP', style: const TextStyle(color: Colors.white70)),
             ],
           ),
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: progress.clamp(0.0, 1.0),
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: Colors.white24,
             valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
             minHeight: 10,
             borderRadius: BorderRadius.circular(5),
@@ -151,8 +154,8 @@ class _StatItem extends StatelessWidget {
       children: [
         Icon(icon, size: 32, color: Theme.of(context).primaryColor),
         const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white)),
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
       ],
     );
   }
@@ -166,7 +169,7 @@ class _RecentActivityTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Recent Activity', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const Text('Recent Activity', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
           const SizedBox(height: 16),
           ListView.builder(
             shrinkWrap: true,
@@ -176,12 +179,12 @@ class _RecentActivityTab extends StatelessWidget {
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
-                  backgroundColor: Colors.blue.shade50,
+                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
                   child: const Icon(Icons.verified, color: Colors.blue),
                 ),
-                title: Text('Verified an issue in Park #${index + 1}'),
-                subtitle: const Text('2 hours ago'),
-                trailing: const Text('+10 XP', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                title: Text('Verified an issue in Park #${index + 1}', style: const TextStyle(color: Colors.white)),
+                subtitle: const Text('2 hours ago', style: TextStyle(color: Colors.white60)),
+                trailing: const Text('+10 XP', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
               );
             },
           ),

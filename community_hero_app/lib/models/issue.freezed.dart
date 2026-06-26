@@ -31,7 +31,7 @@ mixin _$Issue {
   @JsonKey(name: 'verification_count')
   int get verificationCount => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
-  DateTime get createdAt => throw _privateConstructorUsedError;
+  DateTime? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'image_url')
   String? get imageUrl => throw _privateConstructorUsedError;
 
@@ -59,7 +59,7 @@ abstract class $IssueCopyWith<$Res> {
       double latitude,
       double longitude,
       @JsonKey(name: 'verification_count') int verificationCount,
-      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'created_at') DateTime? createdAt,
       @JsonKey(name: 'image_url') String? imageUrl});
 }
 
@@ -87,7 +87,7 @@ class _$IssueCopyWithImpl<$Res, $Val extends Issue>
     Object? latitude = null,
     Object? longitude = null,
     Object? verificationCount = null,
-    Object? createdAt = null,
+    Object? createdAt = freezed,
     Object? imageUrl = freezed,
   }) {
     return _then(_value.copyWith(
@@ -127,10 +127,10 @@ class _$IssueCopyWithImpl<$Res, $Val extends Issue>
           ? _value.verificationCount
           : verificationCount // ignore: cast_nullable_to_non_nullable
               as int,
-      createdAt: null == createdAt
+      createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       imageUrl: freezed == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -156,7 +156,7 @@ abstract class _$$IssueImplCopyWith<$Res> implements $IssueCopyWith<$Res> {
       double latitude,
       double longitude,
       @JsonKey(name: 'verification_count') int verificationCount,
-      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'created_at') DateTime? createdAt,
       @JsonKey(name: 'image_url') String? imageUrl});
 }
 
@@ -182,7 +182,7 @@ class __$$IssueImplCopyWithImpl<$Res>
     Object? latitude = null,
     Object? longitude = null,
     Object? verificationCount = null,
-    Object? createdAt = null,
+    Object? createdAt = freezed,
     Object? imageUrl = freezed,
   }) {
     return _then(_$IssueImpl(
@@ -222,10 +222,10 @@ class __$$IssueImplCopyWithImpl<$Res>
           ? _value.verificationCount
           : verificationCount // ignore: cast_nullable_to_non_nullable
               as int,
-      createdAt: null == createdAt
+      createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       imageUrl: freezed == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -239,15 +239,15 @@ class __$$IssueImplCopyWithImpl<$Res>
 class _$IssueImpl implements _Issue {
   const _$IssueImpl(
       {required this.id,
-      required this.title,
-      required this.description,
-      required this.category,
-      required this.severity,
-      required this.status,
-      required this.latitude,
-      required this.longitude,
+      this.title = 'Unknown Title',
+      this.description = '',
+      this.category = 'General',
+      this.severity = 'Low',
+      this.status = 'Open',
+      this.latitude = 0.0,
+      this.longitude = 0.0,
       @JsonKey(name: 'verification_count') this.verificationCount = 0,
-      @JsonKey(name: 'created_at') required this.createdAt,
+      @JsonKey(name: 'created_at') this.createdAt,
       @JsonKey(name: 'image_url') this.imageUrl});
 
   factory _$IssueImpl.fromJson(Map<String, dynamic> json) =>
@@ -256,25 +256,32 @@ class _$IssueImpl implements _Issue {
   @override
   final String id;
   @override
+  @JsonKey()
   final String title;
   @override
+  @JsonKey()
   final String description;
   @override
+  @JsonKey()
   final String category;
   @override
+  @JsonKey()
   final String severity;
   @override
+  @JsonKey()
   final String status;
   @override
+  @JsonKey()
   final double latitude;
   @override
+  @JsonKey()
   final double longitude;
   @override
   @JsonKey(name: 'verification_count')
   final int verificationCount;
   @override
   @JsonKey(name: 'created_at')
-  final DateTime createdAt;
+  final DateTime? createdAt;
   @override
   @JsonKey(name: 'image_url')
   final String? imageUrl;
@@ -345,15 +352,15 @@ class _$IssueImpl implements _Issue {
 abstract class _Issue implements Issue {
   const factory _Issue(
       {required final String id,
-      required final String title,
-      required final String description,
-      required final String category,
-      required final String severity,
-      required final String status,
-      required final double latitude,
-      required final double longitude,
+      final String title,
+      final String description,
+      final String category,
+      final String severity,
+      final String status,
+      final double latitude,
+      final double longitude,
       @JsonKey(name: 'verification_count') final int verificationCount,
-      @JsonKey(name: 'created_at') required final DateTime createdAt,
+      @JsonKey(name: 'created_at') final DateTime? createdAt,
       @JsonKey(name: 'image_url') final String? imageUrl}) = _$IssueImpl;
 
   factory _Issue.fromJson(Map<String, dynamic> json) = _$IssueImpl.fromJson;
@@ -379,7 +386,7 @@ abstract class _Issue implements Issue {
   int get verificationCount;
   @override
   @JsonKey(name: 'created_at')
-  DateTime get createdAt;
+  DateTime? get createdAt;
   @override
   @JsonKey(name: 'image_url')
   String? get imageUrl;

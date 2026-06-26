@@ -7,15 +7,15 @@ part 'issue.g.dart';
 class Issue with _$Issue {
   const factory Issue({
     required String id,
-    required String title,
-    required String description,
-    required String category,
-    required String severity,
-    required String status,
-    required double latitude,
-    required double longitude,
+    @Default('Unknown Title') String title,
+    @Default('') String description,
+    @Default('General') String category,
+    @Default('Low') String severity,
+    @Default('Open') String status,
+    @Default(0.0) double latitude,
+    @Default(0.0) double longitude,
     @JsonKey(name: 'verification_count') @Default(0) int verificationCount,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'image_url') String? imageUrl,
   }) = _Issue;
 

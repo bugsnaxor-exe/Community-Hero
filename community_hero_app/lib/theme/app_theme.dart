@@ -12,49 +12,27 @@ class AppTheme {
   static const Color textPrimaryLight = Color(0xFF1A1A1A);
   static const Color textSecondaryLight = Color(0xFF757575);
 
-  static ThemeData get lightTheme {
+  static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: Colors.transparent, // Let gradient show through
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primary,
-        primary: primary,
-        secondary: secondary,
-        background: backgroundLight,
-        surface: surfaceLight,
+        brightness: Brightness.dark,
+        seedColor: const Color(0xFF1565C0), // Deep Blue base
       ),
-      scaffoldBackgroundColor: backgroundLight,
       appBarTheme: const AppBarTheme(
-        backgroundColor: primary,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        bodyLarge: TextStyle(color: Colors.white70),
+        bodyMedium: TextStyle(color: Colors.white60),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surfaceLight,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primary, width: 2),
-        ),
-      ),
+      iconTheme: const IconThemeData(color: Colors.white70),
     );
   }
 }
