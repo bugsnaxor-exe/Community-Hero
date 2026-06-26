@@ -8,7 +8,7 @@ class ProfileRepository {
 
   Future<User> getUserProfile(String userId) async {
     try {
-      final response = await _dio.get('/users/$userId/profile');
+      final response = await _dio.get('/users/me');
       return User.fromJson(response.data);
     } catch (e) {
       // Re-throw or handle error
