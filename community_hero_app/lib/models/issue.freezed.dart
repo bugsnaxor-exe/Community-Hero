@@ -20,7 +20,7 @@ Issue _$IssueFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Issue {
-  int get id => throw _privateConstructorUsedError;
+  String get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   String get category => throw _privateConstructorUsedError;
@@ -50,7 +50,7 @@ abstract class $IssueCopyWith<$Res> {
       _$IssueCopyWithImpl<$Res, Issue>;
   @useResult
   $Res call(
-      {int id,
+      {String id,
       String title,
       String description,
       String category,
@@ -94,7 +94,7 @@ class _$IssueCopyWithImpl<$Res, $Val extends Issue>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -147,7 +147,7 @@ abstract class _$$IssueImplCopyWith<$Res> implements $IssueCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {int id,
+      {String id,
       String title,
       String description,
       String category,
@@ -189,7 +189,7 @@ class __$$IssueImplCopyWithImpl<$Res>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -254,7 +254,7 @@ class _$IssueImpl implements _Issue {
       _$$IssueImplFromJson(json);
 
   @override
-  final int id;
+  final String id;
   @override
   final String title;
   @override
@@ -344,7 +344,7 @@ class _$IssueImpl implements _Issue {
 
 abstract class _Issue implements Issue {
   const factory _Issue(
-      {required final int id,
+      {required final String id,
       required final String title,
       required final String description,
       required final String category,
@@ -359,7 +359,7 @@ abstract class _Issue implements Issue {
   factory _Issue.fromJson(Map<String, dynamic> json) = _$IssueImpl.fromJson;
 
   @override
-  int get id;
+  String get id;
   @override
   String get title;
   @override

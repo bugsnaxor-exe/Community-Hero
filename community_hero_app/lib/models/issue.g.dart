@@ -7,7 +7,7 @@ part of 'issue.dart';
 // **************************************************************************
 
 _$IssueImpl _$$IssueImplFromJson(Map<String, dynamic> json) => _$IssueImpl(
-      id: (json['id'] as num).toInt(),
+      id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
       category: json['category'] as String,

@@ -6,7 +6,7 @@ part 'issue.g.dart';
 @freezed
 class Issue with _$Issue {
   const factory Issue({
-    required int id,
+    required String id,
     required String title,
     required String description,
     required String category,
