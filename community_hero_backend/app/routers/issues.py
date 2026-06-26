@@ -40,7 +40,7 @@ def create_issue(issue_in: IssueCreate, db: Session = Depends(get_db), current_u
 def get_issues(db: Session = Depends(get_db)):
     return db.query(Issue).all()
 
-@router.get("/nearby")
+@router.get("/nearby", response_model=List[IssueResponse])
 def get_nearby_issues(
     lat: float, 
     lng: float, 
@@ -63,29 +63,7 @@ def get_nearby_issues(
     )
 
     nearby_issues = db.query(Issue).filter(safe_distance_expr <= radius).all()
-    
-    # Generate GeoJSON Response
-    features = []
-    for issue in nearby_issues:
-        features.append({
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [issue.lng, issue.lat]
-            },
-            "properties": {
-                "id": str(issue.id),
-                "category": issue.category.value,
-                "status": issue.status.value,
-                "description": issue.description,
-                "severity": issue.severity
-            }
-        })
-        
-    return {
-        "type": "FeatureCollection",
-        "features": features
-    }
+    return nearby_issues
 
 @router.get("/{id}", response_model=IssueDetailResponse)
 def get_issue(id: UUID, db: Session = Depends(get_db)):
