@@ -25,41 +25,6 @@ final dioProvider = Provider<Dio>((ref) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
-        // MOCK INTERCEPTOR TO BYPASS 401 ERRORS
-        if (options.path.contains('/dashboard/stats')) {
-          return handler.resolve(Response(
-            requestOptions: options,
-            data: {
-              'activeIssues': 156,
-              'resolvedToday': 24,
-              'totalVolunteers': 892,
-              'communityScore': 94,
-            },
-            statusCode: 200,
-          ));
-        } else if (options.path.contains('/issues')) {
-          return handler.resolve(Response(
-            requestOptions: options,
-            data: [
-              {
-                'id': '1',
-                'title': 'Broken Streetlight',
-                'description': 'Streetlight at 5th Ave is broken.',
-                'category': 'Infrastructure',
-                'severity': 'Medium',
-                'status': 'Open',
-                'latitude': 40.7128,
-                'longitude': -74.0060,
-                'reporterId': 'user1',
-                'createdAt': DateTime.now().toIso8601String(),
-                'upvotes': 5,
-                'imageUrl': '',
-              }
-            ],
-            statusCode: 200,
-          ));
-        }
-
         final token = await secureStorage.read(key: AppConstants.tokenKey);
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';

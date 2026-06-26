@@ -8,7 +8,7 @@ class SearchFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
+        const Expanded(
           child: GlassContainer(
             borderRadius: 30,
             blurX: 10,
@@ -18,15 +18,15 @@ class SearchFilterBar extends StatelessWidget {
             borderWidth: 1.0,
             borderColor: Colors.white24,
             child: TextField(
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Search issues...',
-                hintStyle: const TextStyle(color: Colors.white60),
-                prefixIcon: const Icon(Icons.search, color: Colors.white60),
+                hintStyle: TextStyle(color: Colors.white60),
+                prefixIcon: Icon(Icons.search, color: Colors.white60),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
             ),
           ),

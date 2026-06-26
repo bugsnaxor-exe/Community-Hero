@@ -82,7 +82,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 Expanded(child: Text(issue.title, style: Theme.of(context).textTheme.titleLarge, maxLines: 1, overflow: TextOverflow.ellipsis)),
                 Chip(
                   label: Text(issue.severity),
-                  backgroundColor: _getMarkerColor(issue.severity).withOpacity(0.2),
+                  backgroundColor: _getMarkerColor(issue.severity).withValues(alpha: 0.2),
                 )
               ],
             ),
@@ -159,7 +159,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         setState(() => _selectedCategory = filter);
                       }
                     },
-                    selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                    selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                     checkmarkColor: Theme.of(context).primaryColor,
                   ),
                 );

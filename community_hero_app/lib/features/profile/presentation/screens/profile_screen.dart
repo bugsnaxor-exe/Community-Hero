@@ -127,7 +127,7 @@ class _GamificationStats extends StatelessWidget {
             borderRadius: BorderRadius.circular(5),
           ),
           const SizedBox(height: 24),
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _StatItem(icon: Icons.report_problem, value: '12', label: 'Reported'),

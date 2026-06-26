@@ -92,7 +92,7 @@ class FeedController extends AsyncNotifier<FeedState> {
         hasReachedMax: newIssues.length < _limit,
         isLoadingMore: false,
       ));
-    } catch (e, st) {
+    } catch (e) {
       // Revert loading state but don't drop the entire list
       state = AsyncValue.data(currentState.copyWith(isLoadingMore: false));
       // Optionally handle error (e.g. log it or set a separate error state)

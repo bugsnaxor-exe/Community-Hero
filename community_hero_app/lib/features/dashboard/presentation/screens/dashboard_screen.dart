@@ -52,7 +52,7 @@ class DashboardScreen extends ConsumerWidget {
                           const SizedBox(width: 24),
                           Expanded(child: _ResolvedCard(stats: dashboardState.value?['stats'])),
                           const SizedBox(width: 24),
-                          Expanded(child: _NewVolunteersCard()),
+                          const Expanded(child: _NewVolunteersCard()),
                         ],
                       ),
                     ),
@@ -101,7 +101,7 @@ class DashboardScreen extends ConsumerWidget {
 class _GlassSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
+    return const GlassContainer(
       width: 250,
       height: 48,
       borderRadius: 24,
@@ -111,8 +111,8 @@ class _GlassSearchBar extends StatelessWidget {
       backgroundColor: Colors.white,
       borderWidth: 1.0,
       borderColor: Colors.white24,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: const Row(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
         children: [
           Icon(Icons.search, color: Colors.white60, size: 20),
           SizedBox(width: 8),

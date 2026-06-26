@@ -116,7 +116,7 @@ class _PodiumItem extends StatelessWidget {
           width: rank == 1 ? 100 : 80,
           height: height,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             border: Border.all(color: color, width: 2),
           ),

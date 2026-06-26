@@ -72,7 +72,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                         ref.read(feedCategoryFilterProvider.notifier).state = filter;
                       }
                     },
-                    selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                    selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                     checkmarkColor: Theme.of(context).primaryColor,
                   ),
                 );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../providers/issue_details_controller.dart';
 import '../../../../models/issue.dart';
@@ -105,7 +104,7 @@ class IssueDetailsScreen extends ConsumerWidget {
                           Chip(
                             avatar: const Icon(Icons.verified, size: 16, color: Colors.blue),
                             label: Text('${issue.verificationCount} Verifications'),
-                            backgroundColor: Colors.blue.withOpacity(0.1),
+                            backgroundColor: Colors.blue.withValues(alpha: 0.1),
                           ),
                         ],
                       ),

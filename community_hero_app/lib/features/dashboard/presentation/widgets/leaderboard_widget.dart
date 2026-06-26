@@ -25,13 +25,14 @@ class LeaderboardWidget extends StatelessWidget {
           final isTop3 = index < 3;
           
           Color? medalColor;
-          if (index == 0) medalColor = Colors.amber;
-          else if (index == 1) medalColor = Colors.grey[400];
+          if (index == 0) {
+            medalColor = Colors.amber;
+          } else if (index == 1) medalColor = Colors.grey[400];
           else if (index == 2) medalColor = Colors.brown[300];
 
           return ListTile(
             leading: CircleAvatar(
-              backgroundColor: isTop3 ? medalColor?.withOpacity(0.2) : Colors.grey[200],
+              backgroundColor: isTop3 ? medalColor?.withValues(alpha: 0.2) : Colors.grey[200],
               child: isTop3 
                   ? Icon(Icons.star, color: medalColor)
                   : Text('${index + 1}', style: TextStyle(color: Colors.grey[700])),
@@ -39,7 +40,7 @@ class LeaderboardWidget extends StatelessWidget {
             title: Text(user['email'].toString().split('@')[0]), // Safe display name fallback
             trailing: Chip(
               label: Text('${user['reputation_score']} pts'),
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             ),
           );
         }),

@@ -95,7 +95,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.1),
+          color: Colors.blue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Row(
@@ -113,9 +113,9 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
+          color: Colors.green.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.green.withOpacity(0.5)),
+          border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
         ),
         child: Row(
           children: [
@@ -240,7 +240,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                   const SizedBox(height: 16),
                   
                   DropdownButtonFormField<String>(
-                    value: _selectedCategory,
+                    initialValue: _selectedCategory,
                     decoration: const InputDecoration(labelText: 'Category'),
                     items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                     onChanged: (val) => setState(() => _selectedCategory = val!),
@@ -248,7 +248,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                   const SizedBox(height: 16),
                   
                   DropdownButtonFormField<String>(
-                    value: _selectedSeverity,
+                    initialValue: _selectedSeverity,
                     decoration: const InputDecoration(labelText: 'Severity'),
                     items: _severities.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                     onChanged: (val) => setState(() => _selectedSeverity = val!),

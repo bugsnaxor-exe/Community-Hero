@@ -14,9 +14,9 @@ class AppException implements Exception {
 }
 
 class NetworkException extends AppException {
-  NetworkException(String message, {int? statusCode}) : super(message, statusCode: statusCode);
+  NetworkException(super.message, {super.statusCode});
 }
 
 class AuthException extends AppException {
-  AuthException(String message) : super(message, statusCode: 401);
+  AuthException(super.message) : super(statusCode: 401);
 }
