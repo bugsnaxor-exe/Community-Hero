@@ -18,7 +18,7 @@ class FeedRepository {
     String? category,
   }) async {
     try {
-      final queryParams = {
+      final queryParams = <String, dynamic>{
         'limit': limit,
         'offset': offset,
       };

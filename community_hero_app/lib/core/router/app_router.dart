@@ -11,6 +11,9 @@ import '../../features/report/presentation/screens/report_screen.dart';
 import '../../features/feed/presentation/screens/feed_screen.dart';
 import '../../features/issue_details/presentation/screens/issue_details_screen.dart';
 
+import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+
 // --- DUMMY SCREENS (For Navigation Only) ---
 class DummyScreen extends StatelessWidget {
   final String title;
@@ -117,7 +120,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/profile',
-                builder: (context, state) => const DummyScreen(title: 'Profile'),
+                builder: (context, state) => const ProfileScreen(userId: 'current_user_123'),
               ),
             ],
           ),
@@ -136,7 +139,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/leaderboard',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const DummyScreen(title: 'Leaderboard'),
+        builder: (context, state) => const LeaderboardScreen(),
       ),
       GoRoute(
         path: '/settings',

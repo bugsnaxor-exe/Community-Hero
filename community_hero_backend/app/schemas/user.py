@@ -12,6 +12,9 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: UUID
     email: EmailStr
+    name: str | None = None
+    reputation_score: int = 0
+    level: int = 1
     
     class Config:
         from_attributes = True

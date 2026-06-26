@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/feed_repository.dart';
 import '../../../../models/issue.dart';
@@ -98,3 +99,4 @@ class FeedController extends AsyncNotifier<FeedState> {
     }
   }
 }
+

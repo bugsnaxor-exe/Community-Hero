@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/auth_repository.dart';
 import '../../../../core/exceptions/app_exception.dart';
@@ -50,3 +51,4 @@ class AuthController extends AsyncNotifier<void> {
     state = const AsyncValue.data(null);
   }
 }
+
