@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
-from app.schemas.dashboard import DashboardStatsResponse, CategoryCountResponse, SeverityCountResponse
+from app.schemas.dashboard import DashboardStatsResponse, CategoryCountResponse, SeverityCountResponse, AnalyticsDashboardResponse
 from app.services.dashboard_service import DashboardService
 
 router = APIRouter()
@@ -18,3 +18,11 @@ def get_dashboard_categories(db: Session = Depends(get_db)):
 @router.get("/severity", response_model=List[SeverityCountResponse])
 def get_dashboard_severity(db: Session = Depends(get_db)):
     return DashboardService.get_severity(db)
+
+@router.get("/analytics/dashboard", response_model=AnalyticsDashboardResponse)
+def get_full_dashboard(db: Session = Depends(get_db)):
+    """
+    Returns aggregated data for the entire dashboard in a single call.
+    Includes stats, categories, severities, leaderboard, and recent activity.
+    """
+    return DashboardService.get_full_dashboard(db)

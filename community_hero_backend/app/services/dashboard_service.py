@@ -47,3 +47,39 @@ class DashboardService:
         ).filter(Issue.severity != None).group_by(Issue.severity).order_by(Issue.severity.desc()).all()
         
         return [{"severity": r[0], "count": r[1]} for r in results]
+
+    @staticmethod
+    def get_leaderboard(db: Session, limit: int = 10) -> list:
+        from app.models.user import User
+        users = db.query(User).order_by(User.reputation_score.desc()).limit(limit).all()
+        return [
+            {
+                "id": str(u.id),
+                "email": u.email,
+                "reputation_score": u.reputation_score
+            } for u in users
+        ]
+
+    @staticmethod
+    def get_recent_activity(db: Session, limit: int = 5) -> list:
+        issues = db.query(Issue).order_by(Issue.created_at.desc()).limit(limit).all()
+        # Fallback for old schema where title might be missing, assume description prefix
+        return [
+            {
+                "id": str(i.id),
+                "title": getattr(i, 'title', i.description[:20] if i.description else 'Issue'),
+                "status": str(i.status.value),
+                "category": str(getattr(i, 'category', getattr(i, 'type', 'OTHER'))),
+                "created_at": i.created_at.isoformat()
+            } for i in issues
+        ]
+
+    @staticmethod
+    def get_full_dashboard(db: Session) -> dict:
+        return {
+            "stats": DashboardService.get_stats(db),
+            "categories": DashboardService.get_categories(db),
+            "severity": DashboardService.get_severity(db),
+            "leaderboard": DashboardService.get_leaderboard(db),
+            "recent_activity": DashboardService.get_recent_activity(db)
+        }

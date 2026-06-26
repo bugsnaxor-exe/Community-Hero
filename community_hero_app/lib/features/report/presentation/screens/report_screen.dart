@@ -1,0 +1,285 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import '../providers/report_controller.dart';
+
+class ReportScreen extends ConsumerStatefulWidget {
+  const ReportScreen({super.key});
+
+  @override
+  ConsumerState<ReportScreen> createState() => _ReportScreenState();
+}
+
+class _ReportScreenState extends ConsumerState<ReportScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  
+  String _selectedCategory = 'Pothole';
+  String _selectedSeverity = 'Medium';
+  File? _imageFile;
+  
+  bool _isAnalyzing = false;
+  Map<String, dynamic>? _aiPrediction;
+
+  final List<String> _categories = ['Pothole', 'Streetlight Out', 'Graffiti', 'Litter', 'Water Leak', 'Other'];
+  final List<String> _severities = ['Low', 'Medium', 'High', 'Critical'];
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
+    
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      setState(() {
+        _imageFile = file;
+        _isAnalyzing = true;
+        _aiPrediction = null; // reset old prediction
+      });
+      
+      // Perform AI Analysis automatically after selecting image
+      final prediction = await ref.read(reportControllerProvider.notifier).analyzeImage(file);
+      
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+          _aiPrediction = prediction;
+          
+          // Auto-fill form fields based on AI prediction
+          if (prediction != null) {
+            final predCategory = prediction['category'] as String?;
+            final predSeverity = prediction['severity'] as String?;
+            
+            if (predCategory != null && _categories.contains(predCategory)) {
+              _selectedCategory = predCategory;
+            }
+            if (predSeverity != null && _severities.contains(predSeverity)) {
+              _selectedSeverity = predSeverity;
+            }
+          }
+        });
+      }
+    }
+  }
+
+  void _submit() async {
+    if (_formKey.currentState!.validate()) {
+      final success = await ref.read(reportControllerProvider.notifier).submitReport(
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            category: _selectedCategory,
+            severity: _selectedSeverity,
+            imageFile: _imageFile,
+          );
+          
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Report submitted successfully!'), backgroundColor: Colors.green),
+        );
+        context.go('/home'); // Redirect back to home
+      }
+    }
+  }
+
+  Widget _buildAiPredictionWidget() {
+    if (_isAnalyzing) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.blue.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Row(
+          children: [
+            SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+            SizedBox(width: 16),
+            Expanded(child: Text('AI is analyzing the image...', style: TextStyle(color: Colors.blue))),
+          ],
+        ),
+      );
+    }
+    
+    if (_aiPrediction != null) {
+      final confidence = ((_aiPrediction!['confidence'] ?? 0.0) * 100).toInt();
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.green.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green.withOpacity(0.5)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.auto_awesome, color: Colors.green),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('AI Prediction Applied', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                  Text('Category: ${_aiPrediction!['category']} | Severity: ${_aiPrediction!['severity']} ($confidence% confidence)'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return const SizedBox.shrink();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final reportState = ref.watch(reportControllerProvider);
+    final isLoading = reportState.isLoading;
+
+    ref.listen<AsyncValue<void>>(
+      reportControllerProvider,
+      (_, state) {
+        if (!state.isLoading && state.hasError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Report an Issue'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Image Picker Section
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (ctx) => SafeArea(
+                          child: Wrap(
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.camera_alt),
+                                title: const Text('Take a Photo'),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  _pickImage(ImageSource.camera);
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.photo_library),
+                                title: const Text('Choose from Gallery'),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  _pickImage(ImageSource.gallery);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
+                        image: _imageFile != null
+                            ? DecorationImage(
+                                image: FileImage(_imageFile!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: _imageFile == null
+                          ? const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_a_photo, size: 48, color: Colors.grey),
+                                SizedBox(height: 8),
+                                Text('Tap to add photo', style: TextStyle(color: Colors.grey)),
+                              ],
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // AI Prediction Display
+                  _buildAiPredictionWidget(),
+                  if (_isAnalyzing || _aiPrediction != null) const SizedBox(height: 16),
+                  
+                  // Text Inputs
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(labelText: 'Title', hintText: 'E.g., Large pothole on Main St'),
+                    validator: (value) => value == null || value.isEmpty ? 'Title is required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    decoration: const InputDecoration(labelText: 'Category'),
+                    items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                    onChanged: (val) => setState(() => _selectedCategory = val!),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  DropdownButtonFormField<String>(
+                    value: _selectedSeverity,
+                    decoration: const InputDecoration(labelText: 'Severity'),
+                    items: _severities.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                    onChanged: (val) => setState(() => _selectedSeverity = val!),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(labelText: 'Description', hintText: 'Provide more details...'),
+                    maxLines: 4,
+                    validator: (value) => value == null || value.isEmpty ? 'Description is required' : null,
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Submit Button
+                  SizedBox(
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: isLoading || _isAnalyzing ? null : _submit,
+                      icon: isLoading 
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Icon(Icons.send),
+                      label: Text(isLoading ? 'Submitting & Locating...' : 'Submit Report'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,38 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../services/location_service.dart';
+import '../../../../models/issue.dart';
+import '../../../../models/dashboard_stats.dart';
+
+final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
+  final dio = ref.watch(dioProvider);
+  // Mocking endpoint path assuming /api/dashboard exists
+  final response = await dio.get('/dashboard/stats'); 
+  return DashboardStats.fromJson(response.data);
+});
+
+final recentIssuesProvider = FutureProvider<List<Issue>>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final response = await dio.get('/issues', queryParameters: {'limit': 10, 'sort': 'recent'});
+  
+  final List<dynamic> data = response.data;
+  return data.map((json) => Issue.fromJson(json)).toList();
+});
+
+final nearbyIssuesProvider = FutureProvider<List<Issue>>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final locationService = ref.watch(locationServiceProvider);
+  
+  // 1. Get the current device GPS location
+  final position = await locationService.getCurrentLocation();
+  
+  // 2. Fetch issues around this location within a 5km radius
+  final response = await dio.get('/issues/nearby', queryParameters: {
+    'lat': position.latitude,
+    'lng': position.longitude,
+    'radius': 5, // 5 km
+  });
+  
+  final List<dynamic> data = response.data;
+  return data.map((json) => Issue.fromJson(json)).toList();
+});
