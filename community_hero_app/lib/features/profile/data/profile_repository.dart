@@ -6,7 +6,7 @@ class ProfileRepository {
 
   ProfileRepository(this._dio);
 
-  Future<User> getUserProfile(String userId) async {
+  Future<User> getUserProfile() async {
     try {
       final response = await _dio.get('/users/me');
       return User.fromJson(response.data);

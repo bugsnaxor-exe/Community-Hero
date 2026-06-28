@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../auth/presentation/providers/auth_controller.dart';
 import '../providers/profile_controller.dart';
 import '../../../../models/user.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  final String userId;
-
-  const ProfileScreen({super.key, required this.userId});
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileState = ref.watch(profileControllerProvider(userId));
+    final profileState = ref.watch(profileControllerProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -25,7 +25,7 @@ class ProfileScreen extends ConsumerWidget {
       body: profileState.when(
         data: (user) {
           return RefreshIndicator(
-            onRefresh: () => ref.read(profileControllerProvider(userId).notifier).refresh(),
+            onRefresh: () => ref.read(profileControllerProvider.notifier).refresh(),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
@@ -35,6 +35,29 @@ class ProfileScreen extends ConsumerWidget {
                   _GamificationStats(user: user),
                   const Divider(height: 1, color: Colors.white12),
                   _RecentActivityTab(),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          await ref.read(authControllerProvider.notifier).logout();
+                          if (context.mounted) {
+                            context.go('/login');
+                          }
+                        },
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Logout'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),

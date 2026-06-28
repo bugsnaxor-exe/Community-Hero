@@ -44,17 +44,33 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 32),
 
                     // KPI Cards Row
-                    SizedBox(
-                      height: 320,
-                      child: Row(
-                        children: [
-                          Expanded(child: _OpenIssuesCard(stats: dashboardState.value?['stats'])),
-                          const SizedBox(width: 24),
-                          Expanded(child: _ResolvedCard(stats: dashboardState.value?['stats'])),
-                          const SizedBox(width: 24),
-                          const Expanded(child: _NewVolunteersCard()),
-                        ],
-                      ),
+                    ResponsiveBuilder(
+                      builder: (context, sizingInformation) {
+                        if (sizingInformation.deviceScreenType == DeviceScreenType.mobile) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              SizedBox(height: 320, child: _OpenIssuesCard(stats: dashboardState.value?['stats'])),
+                              const SizedBox(height: 16),
+                              SizedBox(height: 320, child: _ResolvedCard(stats: dashboardState.value?['stats'])),
+                              const SizedBox(height: 16),
+                              const SizedBox(height: 320, child: _NewVolunteersCard()),
+                            ],
+                          );
+                        }
+                        return SizedBox(
+                          height: 320,
+                          child: Row(
+                            children: [
+                              Expanded(child: _OpenIssuesCard(stats: dashboardState.value?['stats'])),
+                              const SizedBox(width: 24),
+                              Expanded(child: _ResolvedCard(stats: dashboardState.value?['stats'])),
+                              const SizedBox(width: 24),
+                              const Expanded(child: _NewVolunteersCard()),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 32),
 

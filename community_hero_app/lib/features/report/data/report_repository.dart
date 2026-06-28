@@ -20,7 +20,7 @@ class ReportRepository {
     required String severity,
     required double latitude,
     required double longitude,
-    File? imageFile,
+    List<File> images = const [],
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -32,16 +32,18 @@ class ReportRepository {
         'longitude': longitude,
       });
 
-      if (imageFile != null) {
-        formData.files.add(
-          MapEntry(
-            'image', // The user specifically requested this field name
-            await MultipartFile.fromFile(
-              imageFile.path,
-              filename: imageFile.path.split('/').last,
+      if (images.isNotEmpty) {
+        for (var image in images) {
+          formData.files.add(
+            MapEntry(
+              'images', // Sending as array field
+              await MultipartFile.fromFile(
+                image.path,
+                filename: image.path.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
 
       final response = await _dio.post(

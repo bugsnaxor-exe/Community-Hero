@@ -10,18 +10,18 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 });
 
 final profileControllerProvider =
-    AsyncNotifierProvider.family<ProfileController, User, String>(() {
+    AsyncNotifierProvider<ProfileController, User>(() {
   return ProfileController();
 });
 
-class ProfileController extends FamilyAsyncNotifier<User, String> {
+class ProfileController extends AsyncNotifier<User> {
   @override
-  FutureOr<User> build(String arg) async {
-    return ref.read(profileRepositoryProvider).getUserProfile(arg);
+  FutureOr<User> build() async {
+    return ref.read(profileRepositoryProvider).getUserProfile();
   }
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => ref.read(profileRepositoryProvider).getUserProfile(arg));
+    state = await AsyncValue.guard(() => ref.read(profileRepositoryProvider).getUserProfile());
   }
 }

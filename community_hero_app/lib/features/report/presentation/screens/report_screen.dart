@@ -19,7 +19,8 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   
   String _selectedCategory = 'Pothole';
   String _selectedSeverity = 'Medium';
-  File? _imageFile;
+  List<File> _images = [];
+  bool _isImageValid = true;
   
   bool _isAnalyzing = false;
   Map<String, dynamic>? _aiPrediction;
@@ -34,30 +35,45 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImages(ImageSource source) async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
+    List<XFile> pickedFiles = [];
     
-    if (pickedFile != null) {
-      final file = File(pickedFile.path);
+    if (source == ImageSource.gallery) {
+      pickedFiles = await picker.pickMultiImage(imageQuality: 80);
+    } else {
+      final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
+      if (pickedFile != null) pickedFiles.add(pickedFile);
+    }
+    
+    if (pickedFiles.isNotEmpty) {
+      final newFiles = pickedFiles.map((x) => File(x.path)).toList();
       setState(() {
-        _imageFile = file;
+        _images.addAll(newFiles);
         _isAnalyzing = true;
-        _aiPrediction = null; // reset old prediction
+        _aiPrediction = null; 
       });
       
-      // Perform AI Analysis automatically after selecting image
-      final prediction = await ref.read(reportControllerProvider.notifier).analyzeImage(file);
+      // Perform AI Analysis on the first new image
+      final prediction = await ref.read(reportControllerProvider.notifier).analyzeImage(newFiles.first);
       
       if (mounted) {
         setState(() {
           _isAnalyzing = false;
           _aiPrediction = prediction;
           
-          // Auto-fill form fields based on AI prediction
           if (prediction != null) {
             final predCategory = prediction['category'] as String?;
             final predSeverity = prediction['severity'] as String?;
+            final isValid = prediction['is_valid'] ?? true;
+            final confidence = prediction['confidence'] ?? 1.0;
+            
+            // Extremely specific check as requested: only block if explicitly invalid or very low confidence on non-standard category
+            if (isValid == false || (predCategory == 'Other' && confidence < 0.3)) {
+              _isImageValid = false;
+            } else {
+              _isImageValid = true;
+            }
             
             if (predCategory != null && _categories.contains(predCategory)) {
               _selectedCategory = predCategory;
@@ -72,13 +88,25 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   }
 
   void _submit() async {
+    if (!_isImageValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid image detected. Please upload a real issue.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    if (_images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload at least one image.'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
     if (_formKey.currentState!.validate()) {
       final success = await ref.read(reportControllerProvider.notifier).submitReport(
             title: _titleController.text.trim(),
             description: _descriptionController.text.trim(),
             category: _selectedCategory,
             severity: _selectedSeverity,
-            imageFile: _imageFile,
+            images: _images,
           );
           
       if (success && mounted) {
@@ -184,7 +212,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                                 title: const Text('Take a Photo'),
                                 onTap: () {
                                   Navigator.pop(ctx);
-                                  _pickImage(ImageSource.camera);
+                                  _pickImages(ImageSource.camera);
                                 },
                               ),
                               ListTile(
@@ -192,7 +220,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                                 title: const Text('Choose from Gallery'),
                                 onTap: () {
                                   Navigator.pop(ctx);
-                                  _pickImage(ImageSource.gallery);
+                                  _pickImages(ImageSource.gallery);
                                 },
                               ),
                             ],
@@ -206,23 +234,29 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                         color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
-                        image: _imageFile != null
-                            ? DecorationImage(
-                                image: FileImage(_imageFile!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
                       ),
-                      child: _imageFile == null
+                      child: _images.isEmpty
                           ? const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.add_a_photo, size: 48, color: Colors.grey),
                                 SizedBox(height: 8),
-                                Text('Tap to add photo', style: TextStyle(color: Colors.grey)),
+                                Text('Tap to add photos', style: TextStyle(color: Colors.grey)),
                               ],
                             )
-                          : null,
+                          : ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _images.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.file(_images[index], fit: BoxFit.cover, width: 180),
+                                  ),
+                                );
+                              },
+                            ),
                     ),
                   ),
                   const SizedBox(height: 16),

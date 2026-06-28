@@ -24,7 +24,7 @@ class ReportController extends AsyncNotifier<void> {
     required String description,
     required String category,
     required String severity,
-    File? imageFile,
+    List<File> images = const [],
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -38,7 +38,7 @@ class ReportController extends AsyncNotifier<void> {
         severity: severity,
         latitude: position.latitude,
         longitude: position.longitude,
-        imageFile: imageFile,
+        images: images,
       );
 
       state = const AsyncValue.data(null);
