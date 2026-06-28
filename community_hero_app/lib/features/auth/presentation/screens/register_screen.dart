@@ -56,11 +56,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       },
     );
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+
     return Scaffold(
+      backgroundColor: scaffoldBgColor,
       appBar: AppBar(
         title: const Text('Register'),
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black87,
+        foregroundColor: isDark ? Colors.white : Colors.black87,
         elevation: 0,
         leading: BackButton(
           onPressed: isLoading ? null : () => context.go('/login'),

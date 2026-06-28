@@ -32,9 +32,9 @@ class ProfileScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   _ProfileHeader(user: user),
-                  const Divider(height: 1, color: Colors.white12),
+                  Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.12)),
                   _GamificationStats(user: user),
-                  const Divider(height: 1, color: Colors.white12),
+                  Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.12)),
                   _RecentActivityTab(),
                   const SizedBox(height: 24),
                   Padding(
@@ -197,14 +197,14 @@ class _GamificationStats extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Level ${user.level}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
-              Text('${user.reputationScore} / $nextLevelXP XP', style: const TextStyle(color: Colors.white70)),
+              Text('Level ${user.level}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Theme.of(context).colorScheme.onSurface)),
+              Text('${user.reputationScore} / $nextLevelXP XP', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
             ],
           ),
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: progress.clamp(0.0, 1.0),
-            backgroundColor: Colors.white24,
+            backgroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
             valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
             minHeight: 10,
             borderRadius: BorderRadius.circular(5),
@@ -237,8 +237,8 @@ class _StatItem extends StatelessWidget {
       children: [
         Icon(icon, size: 32, color: Theme.of(context).primaryColor),
         const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white)),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Theme.of(context).colorScheme.onSurface)),
+        Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 12)),
       ],
     );
   }
@@ -252,7 +252,7 @@ class _RecentActivityTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Recent Activity', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+          Text('Recent Activity', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Theme.of(context).colorScheme.onSurface)),
           const SizedBox(height: 16),
           ListView.builder(
             shrinkWrap: true,
@@ -265,8 +265,8 @@ class _RecentActivityTab extends StatelessWidget {
                   backgroundColor: Colors.blue.withValues(alpha: 0.1),
                   child: const Icon(Icons.verified, color: Colors.blue),
                 ),
-                title: Text('Verified an issue in Park #${index + 1}', style: const TextStyle(color: Colors.white)),
-                subtitle: const Text('2 hours ago', style: TextStyle(color: Colors.white60)),
+                title: Text('Verified an issue in Park #${index + 1}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                subtitle: Text('2 hours ago', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                 trailing: const Text('+10 XP', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
               );
             },

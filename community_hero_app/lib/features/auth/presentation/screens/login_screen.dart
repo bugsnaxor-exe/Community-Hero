@@ -55,7 +55,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       },
     );
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+
     return Scaffold(
+      backgroundColor: scaffoldBgColor,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

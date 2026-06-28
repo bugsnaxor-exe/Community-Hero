@@ -19,9 +19,21 @@ class ResponsiveShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseBgColor = isDark ? const Color(0xFF020617) : const Color(0xFFF1F5F9);
+    final glassBgColor = isDark ? const Color(0xFF0A0F1A) : Colors.white;
+    final glassOpacity = isDark ? 0.6 : 0.6;
+    final borderColor = isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08);
+
+    // Glow opacities
+    final cyanGlow = isDark ? const Color(0x3300B2FF) : const Color(0x0C00B2FF);
+    final purpleGlow = isDark ? const Color(0x33E228FF) : const Color(0x0CE228FF);
+    final greenGlow = isDark ? const Color(0x3300FF5E) : const Color(0x0C00FF5E);
+    final blueGlow = isDark ? const Color(0x661E3A8A) : const Color(0x111E3A8A);
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF020617), // Deep dark base color
+      decoration: BoxDecoration(
+        color: baseBgColor,
       ),
       child: Stack(
         children: [
@@ -32,14 +44,14 @@ class ResponsiveShell extends StatelessWidget {
             child: Container(
               width: 500,
               height: 500,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    Color(0x3300B2FF), // 20% opacity
+                    cyanGlow,
                     Colors.transparent,
                   ],
-                  stops: [0.0, 1.0],
+                  stops: const [0.0, 1.0],
                 ),
               ),
             ),
@@ -51,14 +63,14 @@ class ResponsiveShell extends StatelessWidget {
             child: Container(
               width: 500,
               height: 500,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    Color(0x33E228FF), // 20% opacity
+                    purpleGlow,
                     Colors.transparent,
                   ],
-                  stops: [0.0, 1.0],
+                  stops: const [0.0, 1.0],
                 ),
               ),
             ),
@@ -70,14 +82,14 @@ class ResponsiveShell extends StatelessWidget {
             child: Container(
               width: 600,
               height: 600,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    Color(0x3300FF5E), // 20% opacity
+                    greenGlow,
                     Colors.transparent,
                   ],
-                  stops: [0.0, 1.0],
+                  stops: const [0.0, 1.0],
                 ),
               ),
             ),
@@ -89,14 +101,14 @@ class ResponsiveShell extends StatelessWidget {
             child: Container(
               width: 400,
               height: 400,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    Color(0x661E3A8A), // 40% opacity
+                    blueGlow,
                     Colors.transparent,
                   ],
-                  stops: [0.0, 1.0],
+                  stops: const [0.0, 1.0],
                 ),
               ),
             ),
@@ -108,42 +120,42 @@ class ResponsiveShell extends StatelessWidget {
               builder: (context, sizingInformation) {
                 // Desktop / Tablet layout (Glass Sidebar on the left)
                 if (sizingInformation.deviceScreenType == DeviceScreenType.desktop ||
-              sizingInformation.deviceScreenType == DeviceScreenType.tablet) {
-            return Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: GlassContainer(
-                    width: double.infinity,
-                    height: double.infinity,
-                    blurX: 50,
-                    blurY: 50,
-                    opacity: 0.6,
-                    backgroundColor: const Color(0xFF0A0F1A),
-                    borderRadius: 24,
-                    borderColor: Colors.white.withValues(alpha: 0.08),
-                    child: Row(
-                      children: [
-                        GlassSidebar(navigationShell: navigationShell),
-                        Expanded(child: navigationShell),
-                      ],
+                    sizingInformation.deviceScreenType == DeviceScreenType.tablet) {
+                  return Scaffold(
+                    backgroundColor: Colors.transparent,
+                    body: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: GlassContainer(
+                          width: double.infinity,
+                          height: double.infinity,
+                          blurX: 50,
+                          blurY: 50,
+                          opacity: glassOpacity,
+                          backgroundColor: glassBgColor,
+                          borderRadius: 24,
+                          borderColor: borderColor,
+                          child: Row(
+                            children: [
+                              GlassSidebar(navigationShell: navigationShell),
+                              Expanded(child: navigationShell),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            );
-          }
+                  );
+                }
 
-          // Mobile layout (Bottom Navigation Bar)
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            body: navigationShell,
-            bottomNavigationBar: NavigationBar(
-              backgroundColor: Colors.black.withValues(alpha: 0.5),
-              indicatorColor: Colors.white.withValues(alpha: 0.2),
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: _onTap,
+                // Mobile layout (Bottom Navigation Bar)
+                return Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: navigationShell,
+                  bottomNavigationBar: NavigationBar(
+                    backgroundColor: isDark ? Colors.black.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.8),
+                    indicatorColor: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1),
+                    selectedIndex: navigationShell.currentIndex,
+                    onDestinationSelected: _onTap,
               destinations: const [
                 NavigationDestination(
                   icon: Icon(Icons.people_alt_outlined),

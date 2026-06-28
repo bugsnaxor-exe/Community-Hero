@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'glass_container.dart';
+import '../../features/profile/presentation/providers/profile_controller.dart';
 
-class GlassSidebar extends StatelessWidget {
+class GlassSidebar extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   const GlassSidebar({super.key, required this.navigationShell});
@@ -15,7 +17,12 @@ class GlassSidebar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileState = ref.watch(profileControllerProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white60 : Colors.black54;
+
     return Container(
       width: 250,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -23,24 +30,74 @@ class GlassSidebar extends StatelessWidget {
         borderRadius: 24,
         blurX: 30,
         blurY: 30,
-        opacity: 0.1,
-        backgroundColor: Colors.white,
+        opacity: isDark ? 0.1 : 0.6,
+        backgroundColor: isDark ? Colors.white : Colors.white.withOpacity(0.8),
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
         child: Column(
           children: [
             // User Profile Section
-            const CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.white24,
-              child: Icon(Icons.person, size: 40, color: Colors.white),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Alex Chen',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            profileState.when(
+              data: (user) {
+                final displayName = user.name?.isNotEmpty == true ? user.name! : 'Unknown Hero';
+                final displayInitial = (user.name?.isNotEmpty == true ? user.name!.substring(0, 1) : user.email.substring(0, 1)).toUpperCase();
+                return Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      child: Text(
+                        displayInitial,
+                        style: const TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      displayName,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '@${(user.name?.isNotEmpty == true ? user.name! : user.email.split('@').first).replaceAll(' ', '').toLowerCase()}',
+                      style: TextStyle(
+                        color: subTextColor,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: isDark ? Colors.white24 : Colors.grey.shade300,
+                    child: const CircularProgressIndicator(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Loading...', style: TextStyle(color: textColor)),
+                ],
+              ),
+              error: (_, __) => Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: isDark ? Colors.white24 : Colors.grey.shade300,
+                    child: Icon(Icons.person, size: 40, color: textColor),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Unknown Hero',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 48),
@@ -102,6 +159,11 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? Colors.white : Colors.black87;
+    final inactiveColor = isDark ? Colors.white60 : Colors.black54;
+    final bgActiveColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.08);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -109,7 +171,7 @@ class _NavItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: isSelected
             ? BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: bgActiveColor,
                 borderRadius: BorderRadius.circular(16),
               )
             : null,
@@ -117,14 +179,14 @@ class _NavItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.white60,
+              color: isSelected ? activeColor : inactiveColor,
               size: 24,
             ),
             const SizedBox(width: 16),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white60,
+                color: isSelected ? activeColor : inactiveColor,
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
