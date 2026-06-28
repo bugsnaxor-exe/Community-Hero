@@ -14,6 +14,8 @@ import '../../features/issue_details/presentation/screens/issue_details_screen.d
 import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 
+import '../../features/auth/data/auth_repository.dart';
+
 // --- DUMMY SCREENS (For Navigation Only) ---
 class DummyScreen extends StatelessWidget {
   final String title;
@@ -49,10 +51,28 @@ final shellNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'dashbo
 final shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'profileShell');
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final authRepository = ref.watch(authRepositoryProvider);
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/login', // Defaulting to login for now
     debugLogDiagnostics: true,
+    redirect: (context, state) async {
+      final isAuth = await authRepository.isAuthenticated();
+      final loggingIn = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+
+      if (!isAuth) {
+        // If not authenticated and trying to access a protected route, redirect to login
+        return loggingIn ? null : '/login';
+      }
+
+      // If authenticated and trying to access login/register, redirect to home
+      if (loggingIn) {
+        return '/home';
+      }
+
+      return null;
+    },
     routes: [
       // Auth & Initial Routes
       GoRoute(

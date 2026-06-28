@@ -72,10 +72,43 @@ class AuthRepository {
   Future<void> logout() async {
     await _secureStorage.delete(key: AppConstants.tokenKey);
     await _secureStorage.delete(key: AppConstants.userKey);
+    await _secureStorage.delete(key: 'session_last_active_time');
+  }
+
+  Future<void> updateLastActive() async {
+    await _secureStorage.write(
+      key: 'session_last_active_time',
+      value: DateTime.now().toIso8601String(),
+    );
+  }
+
+  Future<bool> checkSessionValid() async {
+    final token = await _secureStorage.read(key: AppConstants.tokenKey);
+    if (token == null) return false;
+
+    final lastActiveStr = await _secureStorage.read(key: 'session_last_active_time');
+    if (lastActiveStr == null) {
+      await updateLastActive();
+      return true;
+    }
+
+    final lastActive = DateTime.tryParse(lastActiveStr);
+    if (lastActive == null) {
+      await updateLastActive();
+      return true;
+    }
+
+    // 6 months session expiration (approx 180 days)
+    if (DateTime.now().difference(lastActive).inDays > 180) {
+      await logout();
+      return false;
+    }
+
+    await updateLastActive();
+    return true;
   }
 
   Future<bool> isAuthenticated() async {
-    final token = await _secureStorage.read(key: AppConstants.tokenKey);
-    return token != null;
+    return checkSessionValid();
   }
 }

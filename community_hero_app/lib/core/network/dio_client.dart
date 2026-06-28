@@ -28,6 +28,11 @@ final dioProvider = Provider<Dio>((ref) {
         final token = await secureStorage.read(key: AppConstants.tokenKey);
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
+          // Update last active time
+          await secureStorage.write(
+            key: 'session_last_active_time',
+            value: DateTime.now().toIso8601String(),
+          );
         }
         return handler.next(options);
       },
