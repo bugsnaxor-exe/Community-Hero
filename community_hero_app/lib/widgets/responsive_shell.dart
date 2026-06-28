@@ -32,12 +32,15 @@ class ResponsiveShell extends StatelessWidget {
             child: Container(
               width: 500,
               height: 500,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF00B2FF).withValues(alpha: 0.1),
-                boxShadow: const [
-                  BoxShadow(color: Color(0xFF00B2FF), blurRadius: 150, spreadRadius: 0)
-                ]
+                gradient: RadialGradient(
+                  colors: [
+                    Color(0x3300B2FF), // 20% opacity
+                    Colors.transparent,
+                  ],
+                  stops: [0.0, 1.0],
+                ),
               ),
             ),
           ),
@@ -48,12 +51,15 @@ class ResponsiveShell extends StatelessWidget {
             child: Container(
               width: 500,
               height: 500,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFE228FF).withValues(alpha: 0.1),
-                boxShadow: const [
-                  BoxShadow(color: Color(0xFFE228FF), blurRadius: 150, spreadRadius: 0)
-                ]
+                gradient: RadialGradient(
+                  colors: [
+                    Color(0x33E228FF), // 20% opacity
+                    Colors.transparent,
+                  ],
+                  stops: [0.0, 1.0],
+                ),
               ),
             ),
           ),
@@ -64,12 +70,15 @@ class ResponsiveShell extends StatelessWidget {
             child: Container(
               width: 600,
               height: 600,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF00FF5E).withValues(alpha: 0.1),
-                boxShadow: const [
-                  BoxShadow(color: Color(0xFF00FF5E), blurRadius: 200, spreadRadius: 0)
-                ]
+                gradient: RadialGradient(
+                  colors: [
+                    Color(0x3300FF5E), // 20% opacity
+                    Colors.transparent,
+                  ],
+                  stops: [0.0, 1.0],
+                ),
               ),
             ),
           ),
@@ -80,22 +89,19 @@ class ResponsiveShell extends StatelessWidget {
             child: Container(
               width: 400,
               height: 400,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1E3A8A).withValues(alpha: 0.2),
-                boxShadow: const [
-                  BoxShadow(color: Color(0xFF1E3A8A), blurRadius: 100, spreadRadius: 20)
-                ]
+                gradient: RadialGradient(
+                  colors: [
+                    Color(0x661E3A8A), // 40% opacity
+                    Colors.transparent,
+                  ],
+                  stops: [0.0, 1.0],
+                ),
               ),
             ),
           ),
-          // Global backdrop filter to smooth all the background orbs out
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
+          // Global backdrop filter removed for massive performance gains
           // Foreground content
           Positioned.fill(
             child: ResponsiveBuilder(
