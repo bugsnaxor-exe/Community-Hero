@@ -32,10 +32,12 @@ def analyze_issue_image(image_path: str) -> dict:
         prompt = """
         Analyze this image for community issues. Return a RAW JSON object (no markdown formatting, no backticks).
         The JSON must contain exactly these 4 keys:
-        - "category": Must be one of ["pothole", "water_leakage", "garbage_dump", "broken_streetlight", "road_damage", "drainage_issue", "other"]. Choose the most accurate one.
+        - "category": Must be one of ["pothole", "water_leakage", "garbage_dump", "broken_streetlight", "road_damage", "drainage_issue", "other", "invalid"].
         - "confidence": A float between 0.0 and 1.0 representing your confidence in the category.
-        - "severity": A float between 1.0 and 10.0 representing the physical severity or danger of the issue.
+        - "severity": A float between 0.0 and 10.0 representing the physical severity or danger of the issue.
         - "reasoning": A short sentence explaining why you chose this category and severity.
+        
+        CRITICAL: If the image is clearly NOT a community issue (e.g., a selfie, a screenshot of a game like Clash of Clans, a random object, a QR code, or any image completely unrelated to infrastructure or community problems), you MUST set "category" to "invalid", "confidence" to 1.0, and "severity" to 0.0. Do not attempt to classify random images into valid categories.
         """
 
         response = client.chat.completions.create(
