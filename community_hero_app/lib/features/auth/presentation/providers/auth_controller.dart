@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/auth_repository.dart';
 import '../../../../core/exceptions/app_exception.dart';
+import '../../../profile/presentation/providers/profile_controller.dart';
 
 final authControllerProvider = AsyncNotifierProvider<AuthController, void>(() {
   return AuthController();
@@ -19,6 +20,7 @@ class AuthController extends AsyncNotifier<void> {
     state = const AsyncValue.loading();
     try {
       await _authRepository.login(email, password);
+      ref.invalidate(profileControllerProvider);
       state = const AsyncValue.data(null);
       return true;
     } on AppException catch (e) {
@@ -34,6 +36,7 @@ class AuthController extends AsyncNotifier<void> {
     state = const AsyncValue.loading();
     try {
       await _authRepository.register(email, password, username);
+      ref.invalidate(profileControllerProvider);
       state = const AsyncValue.data(null);
       return true;
     } on AppException catch (e) {
@@ -48,6 +51,7 @@ class AuthController extends AsyncNotifier<void> {
   Future<void> logout() async {
     state = const AsyncValue.loading();
     await _authRepository.logout();
+    ref.invalidate(profileControllerProvider);
     state = const AsyncValue.data(null);
   }
 }

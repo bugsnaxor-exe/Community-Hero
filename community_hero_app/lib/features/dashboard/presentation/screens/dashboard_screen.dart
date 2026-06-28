@@ -6,6 +6,7 @@ import '../../../../widgets/glassmorphism/glass_container.dart';
 import '../../../../widgets/glassmorphism/neon_card.dart';
 import '../widgets/nearby_issues_sidebar.dart';
 import '../providers/dashboard_controller.dart';
+import '../../../../theme/theme_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -23,22 +24,31 @@ class DashboardScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     // Top Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Community Hero',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        _GlassSearchBar(),
+                        Row(
+                          children: [
+                            _GlassSearchBar(),
+                            const SizedBox(width: 16),
+                            const _ThemeToggle(),
+                          ],
+                        ),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -75,18 +85,16 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 32),
 
                     // Recent Activity
-                    const Text(
+                    Text(
                       'Recent Activity',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Expanded(
-                      child: _RecentActivityList(activities: dashboardState.value?['recent_activity'] ?? []),
-                    ),
+                    _RecentActivityList(activities: dashboardState.value?['recent_activity'] ?? []),
                   ],
                 ),
               ),
@@ -117,27 +125,32 @@ class DashboardScreen extends ConsumerWidget {
 class _GlassSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const GlassContainer(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hintColor = isDark ? Colors.white60 : Colors.black54;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final borderColor = isDark ? Colors.white24 : Colors.black12;
+
+    return GlassContainer(
       width: 250,
       height: 48,
       borderRadius: 24,
       blurX: 10,
       blurY: 10,
-      opacity: 0.1,
-      backgroundColor: Colors.white,
+      opacity: isDark ? 0.1 : 0.6,
+      backgroundColor: isDark ? Colors.white : Colors.white.withOpacity(0.8),
       borderWidth: 1.0,
-      borderColor: Colors.white24,
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      borderColor: borderColor,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Icon(Icons.search, color: Colors.white60, size: 20),
-          SizedBox(width: 8),
+          Icon(Icons.search, color: hintColor, size: 20),
+          const SizedBox(width: 8),
           Expanded(
             child: TextField(
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: textColor),
               decoration: InputDecoration(
                 hintText: 'Search',
-                hintStyle: TextStyle(color: Colors.white60),
+                hintStyle: TextStyle(color: hintColor),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
@@ -145,6 +158,32 @@ class _GlassSearchBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ThemeToggle extends ConsumerWidget {
+  const _ThemeToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == ThemeMode.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        icon: Icon(
+          isDark ? Icons.light_mode : Icons.dark_mode,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+        onPressed: () {
+          ref.read(themeProvider.notifier).toggleTheme();
+        },
       ),
     );
   }
@@ -367,7 +406,12 @@ class _RecentActivityList extends StatelessWidget {
       {'title': 'Community Impact started', 'time': '41 mins ago', 'subtitle': '41 weeks ago', 'icon': Icons.play_arrow, 'color': const Color(0xFF00B2FF)},
     ];
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final itemBgColor = isDark ? Colors.white : Colors.black;
+
     return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: items.length,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -378,7 +422,7 @@ class _RecentActivityList extends StatelessWidget {
           blurX: 10,
           blurY: 10,
           opacity: 0.05,
-          backgroundColor: Colors.white,
+          backgroundColor: itemBgColor,
           child: Row(
             children: [
               Container(
@@ -396,19 +440,19 @@ class _RecentActivityList extends StatelessWidget {
                   children: [
                     Text(
                       item['title'] as String? ?? 'Activity',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       item['subtitle'] as String? ?? '',
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12),
                     ),
                   ],
                 ),
               ),
               Text(
                 item['time'] as String? ?? 'Just now',
-                style: const TextStyle(color: Colors.white54, fontSize: 12),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12),
               ),
             ],
           ),

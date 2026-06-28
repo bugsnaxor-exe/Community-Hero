@@ -10,11 +10,11 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 });
 
 final profileControllerProvider =
-    AsyncNotifierProvider<ProfileController, User>(() {
+    AsyncNotifierProvider.autoDispose<ProfileController, User>(() {
   return ProfileController();
 });
 
-class ProfileController extends AsyncNotifier<User> {
+class ProfileController extends AutoDisposeAsyncNotifier<User> {
   @override
   FutureOr<User> build() async {
     return ref.read(profileRepositoryProvider).getUserProfile();
