@@ -98,6 +98,7 @@ class DashboardScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+            ),
               
               // Right Sidebar for Desktop/Tablet
               ResponsiveBuilder(
