@@ -60,4 +60,5 @@ class ReportController extends AsyncNotifier<void> {
       return null;
     }
   }
+}
 
