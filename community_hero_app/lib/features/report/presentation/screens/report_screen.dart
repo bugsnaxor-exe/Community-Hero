@@ -1,4 +1,4 @@
-import 'dart:io' show File;
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -254,7 +254,21 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                     child: kIsWeb
                                         ? Image.network(_images[index].path, fit: BoxFit.cover, width: 180)
-                                        : Image.file(File(_images[index].path), fit: BoxFit.cover, width: 180),
+                                        : FutureBuilder<Uint8List>(
+                                            future: _images[index].readAsBytes(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                                return const SizedBox(
+                                                  width: 180,
+                                                  child: Center(child: CircularProgressIndicator()),
+                                                );
+                                              }
+                                              if (snapshot.hasData) {
+                                                return Image.memory(snapshot.data!, fit: BoxFit.cover, width: 180);
+                                              }
+                                              return const SizedBox(width: 180, child: Icon(Icons.error));
+                                            },
+                                          ),
                                   ),
                                 );
                               },
