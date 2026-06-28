@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,7 +20,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   
   String _selectedCategory = 'Pothole';
   String _selectedSeverity = 'Medium';
-  List<File> _images = [];
+  List<XFile> _images = [];
   bool _isImageValid = true;
   
   bool _isAnalyzing = false;
@@ -47,15 +48,14 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     }
     
     if (pickedFiles.isNotEmpty) {
-      final newFiles = pickedFiles.map((x) => File(x.path)).toList();
       setState(() {
-        _images.addAll(newFiles);
+        _images.addAll(pickedFiles);
         _isAnalyzing = true;
         _aiPrediction = null; 
       });
       
       // Perform AI Analysis on the first new image
-      final prediction = await ref.read(reportControllerProvider.notifier).analyzeImage(newFiles.first);
+      final prediction = await ref.read(reportControllerProvider.notifier).analyzeImage(pickedFiles.first);
       
       if (mounted) {
         setState(() {
@@ -252,7 +252,9 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
-                                    child: Image.file(_images[index], fit: BoxFit.cover, width: 180),
+                                    child: kIsWeb
+                                        ? Image.network(_images[index].path, fit: BoxFit.cover, width: 180)
+                                        : Image.file(File(_images[index].path), fit: BoxFit.cover, width: 180),
                                   ),
                                 );
                               },

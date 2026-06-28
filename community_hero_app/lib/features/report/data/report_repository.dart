@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/exceptions/app_exception.dart';
 
@@ -20,7 +21,7 @@ class ReportRepository {
     required String severity,
     required double latitude,
     required double longitude,
-    List<File> images = const [],
+    List<XFile> images = const [],
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -34,12 +35,13 @@ class ReportRepository {
 
       if (images.isNotEmpty) {
         for (var image in images) {
+          final bytes = await image.readAsBytes();
           formData.files.add(
             MapEntry(
               'images', // Sending as array field
-              await MultipartFile.fromFile(
-                image.path,
-                filename: image.path.split('/').last,
+              MultipartFile.fromBytes(
+                bytes,
+                filename: image.name,
               ),
             ),
           );
@@ -62,12 +64,13 @@ class ReportRepository {
     }
   }
 
-  Future<Map<String, dynamic>> analyzeImage(File imageFile) async {
+  Future<Map<String, dynamic>> analyzeImage(XFile image) async {
     try {
+      final bytes = await image.readAsBytes();
       final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(
-          imageFile.path,
-          filename: imageFile.path.split('/').last,
+        'image': MultipartFile.fromBytes(
+          bytes,
+          filename: image.name,
         ),
       });
 

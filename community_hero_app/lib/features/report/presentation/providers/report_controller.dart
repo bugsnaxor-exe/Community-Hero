@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/report_repository.dart';
 import '../../../../services/location_service.dart';
@@ -24,7 +24,7 @@ class ReportController extends AsyncNotifier<void> {
     required String description,
     required String category,
     required String severity,
-    List<File> images = const [],
+    List<XFile> images = const [],
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -52,13 +52,12 @@ class ReportController extends AsyncNotifier<void> {
     }
   }
 
-  Future<Map<String, dynamic>?> analyzeImage(File imageFile) async {
+  Future<Map<String, dynamic>?> analyzeImage(XFile image) async {
     try {
-      return await _reportRepository.analyzeImage(imageFile);
+      return await _reportRepository.analyzeImage(image);
     } catch (e) {
       // Don't throw or set error state, just return null so UI knows analysis failed but doesn't block submission
       return null;
     }
   }
-}
 
