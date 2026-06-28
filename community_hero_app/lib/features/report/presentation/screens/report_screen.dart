@@ -37,6 +37,11 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   }
 
   Future<void> _pickImages(ImageSource source) async {
+    if (_images.length >= 6) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Maximum 6 images allowed.')));
+      return;
+    }
+    
     final picker = ImagePicker();
     List<XFile> pickedFiles = [];
     
@@ -48,6 +53,12 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     }
     
     if (pickedFiles.isNotEmpty) {
+      int remainingSlots = 6 - _images.length;
+      if (pickedFiles.length > remainingSlots) {
+        pickedFiles = pickedFiles.sublist(0, remainingSlots);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Only up to 6 images can be uploaded.')));
+      }
+
       setState(() {
         _images.addAll(pickedFiles);
         _isAnalyzing = true;
@@ -246,8 +257,30 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                             )
                           : ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: _images.length,
+                              itemCount: _images.length < 6 ? _images.length + 1 : _images.length,
                               itemBuilder: (context, index) {
+                                if (index == _images.length) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Container(
+                                      width: 180,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+                                            SizedBox(height: 8),
+                                            Text('Add more', style: TextStyle(color: Colors.grey)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
                                 return Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: ClipRRect(

@@ -35,4 +35,27 @@ class AppTheme {
       iconTheme: const IconThemeData(color: Colors.white70),
     );
   }
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: Colors.transparent, // Let gradient show through
+      colorScheme: ColorScheme.fromSeed(
+        brightness: Brightness.light,
+        seedColor: const Color(0xFF1565C0), // Deep Blue base
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+        centerTitle: false,
+      ),
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        bodyLarge: TextStyle(color: Colors.black87),
+        bodyMedium: TextStyle(color: Colors.black54),
+      ),
+      iconTheme: const IconThemeData(color: Colors.black54),
+    );
+  }
 }

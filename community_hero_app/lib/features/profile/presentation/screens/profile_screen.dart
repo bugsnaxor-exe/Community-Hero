@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/providers/auth_controller.dart';
 import '../providers/profile_controller.dart';
 import '../../../../models/user.dart';
+import '../../../../theme/theme_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -17,9 +18,9 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Settings', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text('Settings', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(icon: const Icon(Icons.settings, color: Colors.white), onPressed: () {}),
+          IconButton(icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.onSurface), onPressed: () {}),
         ],
       ),
       body: profileState.when(
@@ -35,6 +36,24 @@ class ProfileScreen extends ConsumerWidget {
                   _GamificationStats(user: user),
                   const Divider(height: 1, color: Colors.white12),
                   _RecentActivityTab(),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: SwitchListTile(
+                        title: Text('Dark Theme', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                        secondary: Icon(Icons.dark_mode, color: Theme.of(context).colorScheme.onSurface),
+                        value: ref.watch(themeProvider) == ThemeMode.dark,
+                        onChanged: (_) {
+                          ref.read(themeProvider.notifier).toggleTheme();
+                        },
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -88,7 +107,7 @@ class _ProfileHeader extends StatelessWidget {
                 radius: 50,
                 backgroundColor: Theme.of(context).primaryColor,
                 child: Text(
-                  user.name?.substring(0, 1).toUpperCase() ?? 'U',
+                  (user.name?.isNotEmpty == true ? user.name!.substring(0, 1) : user.email.substring(0, 1)).toUpperCase(),
                   style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -104,12 +123,16 @@ class _ProfileHeader extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            user.name ?? 'Unknown Hero',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+            user.name?.isNotEmpty == true ? user.name! : 'Unknown Hero',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+          ),
+          Text(
+            '@${(user.name?.isNotEmpty == true ? user.name! : user.email.split('@').first).replaceAll(' ', '').toLowerCase()}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
           ),
           Text(
             user.email,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
           ),
         ],
       ),
