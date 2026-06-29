@@ -38,7 +38,7 @@ class DashboardService:
             func.count(Issue.id).label('count')
         ).group_by(Issue.category).all()
         
-        return [{"category": str(r[0].value), "count": r[1]} for r in results]
+        return [{"category": str(r[0].value if r[0] else "other"), "count": r[1]} for r in results]
 
     @staticmethod
     def get_severity(db: Session) -> list:
@@ -70,10 +70,10 @@ class DashboardService:
         return [
             {
                 "id": str(i.id),
-                "title": getattr(i, 'title', i.description[:20] if i.description else 'Issue'),
-                "status": str(i.status.value),
-                "category": str(getattr(i, 'category', getattr(i, 'type', 'OTHER'))),
-                "created_at": i.created_at.isoformat()
+                "title": getattr(i, 'title', (i.description[:20] if i.description else 'Issue') if hasattr(i, 'description') else 'Issue'),
+                "status": str(i.status.value if i.status else "REPORTED"),
+                "category": str(i.category.value if i.category else "other"),
+                "created_at": i.created_at.isoformat() if i.created_at else ""
             } for i in issues
         ]
 

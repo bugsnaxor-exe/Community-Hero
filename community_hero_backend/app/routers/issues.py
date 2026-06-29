@@ -92,10 +92,29 @@ def create_issue(
     upload_dir = "static/uploads"
     os.makedirs(upload_dir, exist_ok=True)
     
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+    MAX_FILE_SIZE = 10 * 1024 * 1024 # 10 MB
+
     saved_paths = []
     try:
         for file in valid_images:
             file_extension = file.filename.split(".")[-1].lower()
+            if file_extension not in ALLOWED_EXTENSIONS:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"File type '{file_extension}' not allowed. Allowed types are: jpg, jpeg, png."
+                )
+
+            # Check file size by seeking
+            file.file.seek(0, 2)
+            file_size = file.file.tell()
+            file.file.seek(0) # reset
+            if file_size > MAX_FILE_SIZE:
+                raise HTTPException(
+                    status_code=400,
+                    detail="File size exceeds the 10MB limit."
+                )
+
             new_filename = f"{uuid.uuid4()}.{file_extension}"
             file_path = os.path.join(upload_dir, new_filename)
             
@@ -280,14 +299,12 @@ def verify_issue(id: UUID, verify_in: IssueVerificationCreate, db: Session = Dep
         
     new_verification = IssueVerification(issue_id=id, user_id=current_user.id, vote=verify_in.vote)
     db.add(new_verification)
+    db.flush()
     
-    # We add the new verification and calculate CONFIRM count including the new one (if it's a CONFIRM)
     confirm_count = db.query(IssueVerification).filter(
         IssueVerification.issue_id == id,
         IssueVerification.vote == VoteType.CONFIRM
     ).count()
-    if verify_in.vote == VoteType.CONFIRM:
-        confirm_count += 1
     
     # 3-verification logic (ONLY FOR CONFIRM VOTES)
     if issue.status == IssueStatus.REPORTED and confirm_count >= 3:

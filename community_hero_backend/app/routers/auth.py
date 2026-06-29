@@ -25,7 +25,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 def login(login_data: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == login_data.email).first()
     if not user or not verify_password(login_data.password, user.password_hash):
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
     
     if login_data.name:
         user.name = login_data.name

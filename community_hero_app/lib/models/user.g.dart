@@ -10,7 +10,7 @@ _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
       id: json['id'] as String,
       email: json['email'] as String,
       name: json['name'] as String?,
-      reputationScore: (json['reputationScore'] as num?)?.toInt() ?? 0,
+      reputationScore: (json['reputation_score'] as num?)?.toInt() ?? 0,
       level: (json['level'] as num?)?.toInt() ?? 1,
     );
 
@@ -19,6 +19,6 @@ Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
       'id': instance.id,
       'email': instance.email,
       'name': instance.name,
-      'reputationScore': instance.reputationScore,
+      'reputation_score': instance.reputationScore,
       'level': instance.level,
     };

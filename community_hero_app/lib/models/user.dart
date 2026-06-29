@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'user.freezed.dart';
@@ -9,7 +10,7 @@ class User with _$User {
     required String id,
     required String email,
     String? name,
-    @Default(0) int reputationScore,
+    @JsonKey(name: 'reputation_score') @Default(0) int reputationScore,
     @Default(1) int level,
   }) = _User;
 

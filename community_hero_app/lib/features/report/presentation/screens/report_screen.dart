@@ -80,6 +80,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     }
     
     if (pickedFiles.isNotEmpty) {
+      if (!mounted) return;
       int remainingSlots = 6 - _images.length;
       if (pickedFiles.length > remainingSlots) {
         pickedFiles = pickedFiles.sublist(0, remainingSlots);

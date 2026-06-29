@@ -5,18 +5,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client pointing to OpenRouter
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=settings.OPENROUTER_API_KEY,
-)
+import json
+import re
 
 def encode_image_to_base64(image_path: str) -> str:
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
-
-import json
-import re
 
 # Models to try in order — first available one wins
 MODELS = [
@@ -35,6 +29,10 @@ def analyze_issue_image(image_path: str) -> dict:
         return {}
 
     try:
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=settings.OPENROUTER_API_KEY,
+        )
         base64_image = encode_image_to_base64(image_path)
         logger.info(f"Analyzing image: {image_path} (base64 length: {len(base64_image)})")
 
