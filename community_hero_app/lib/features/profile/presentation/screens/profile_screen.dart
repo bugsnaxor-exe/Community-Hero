@@ -39,24 +39,6 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: SwitchListTile(
-                        title: Text('Dark Theme', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-                        secondary: Icon(Icons.dark_mode, color: Theme.of(context).colorScheme.onSurface),
-                        value: ref.watch(themeProvider) == ThemeMode.dark,
-                        onChanged: (_) {
-                          ref.read(themeProvider.notifier).toggleTheme();
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: SizedBox(
                       width: double.infinity,
                       height: 50,

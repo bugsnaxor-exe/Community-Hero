@@ -17,12 +17,17 @@ class StatisticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
+    final opacity = isDark ? 0.05 : 0.6;
+
     return GlassContainer(
       borderRadius: 16,
       padding: const EdgeInsets.all(16.0),
       blurX: 10,
       blurY: 10,
-      opacity: 0.05,
+      opacity: opacity,
       backgroundColor: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,14 +45,14 @@ class StatisticsCard extends StatelessWidget {
             value,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: textColor,
                 ),
           ),
           const SizedBox(height: 4),
           Text(
             title,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white70,
+                  color: subtextColor,
                 ),
           ),
         ],

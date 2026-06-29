@@ -30,14 +30,22 @@ class IssueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
+    final hintColor = isDark ? Colors.white54 : Colors.black38;
+    final cardBgColor = Colors.white;
+    final cardOpacity = isDark ? 0.05 : 0.6;
+    final placeholderColor = isDark ? Colors.white38 : Colors.black38;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: GlassContainer(
         borderRadius: 12,
         blurX: 10,
         blurY: 10,
-        opacity: 0.05,
-        backgroundColor: Colors.white,
+        opacity: cardOpacity,
+        backgroundColor: cardBgColor,
         child: InkWell(
           onTap: () => context.go('/issue-details/${issue.id}'),
           borderRadius: BorderRadius.circular(12),
@@ -52,15 +60,15 @@ class IssueCard extends StatelessWidget {
                   child: Container(
                     width: 90,
                     height: 100,
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
                     child: issue.imageUrl != null && issue.imageUrl!.isNotEmpty
                         ? Image.network(
                             issue.imageUrl!,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.broken_image_outlined, color: Colors.white38),
+                                Icon(Icons.broken_image_outlined, color: placeholderColor),
                           )
-                        : const Icon(Icons.image_not_supported_outlined, color: Colors.white38),
+                        : Icon(Icons.image_not_supported_outlined, color: placeholderColor),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -88,7 +96,7 @@ class IssueCard extends StatelessWidget {
                           ),
                           Text(
                             _getTimeAgo(issue.createdAt ?? DateTime.now()),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white60),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: subtextColor),
                           ),
                         ],
                       ),
@@ -97,75 +105,78 @@ class IssueCard extends StatelessWidget {
                         issue.title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textColor,
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       // Category & Status
-                    Row(
-                      children: [
-                        Text(
-                          issue.category,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.white70,
-                                fontWeight: FontWeight.w500,
-                              ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('•', style: TextStyle(color: Colors.white54)),
-                        const SizedBox(width: 8),
-                        Text(
-                          issue.status,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: issue.status.toLowerCase() == 'resolved' ? Colors.green : Colors.orange,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Location and Verification Count
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              const Icon(Icons.location_on, size: 14, color: Colors.white54),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  '${issue.latitude.toStringAsFixed(4)}, ${issue.longitude.toStringAsFixed(4)}',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Text(
+                            issue.category,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: subtextColor,
+                                  fontWeight: FontWeight.w500,
                                 ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text('•', style: TextStyle(color: hintColor)),
+                          const SizedBox(width: 8),
+                          Text(
+                            issue.status,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: issue.status.toLowerCase() == 'resolved' ? Colors.green : Colors.orange,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Location and Verification Count
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Icon(Icons.location_on, size: 14, color: hintColor),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    '${issue.latitude.toStringAsFixed(4)}, ${issue.longitude.toStringAsFixed(4)}',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: subtextColor),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.verified, size: 14, color: Colors.blue),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${issue.verificationCount}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
                               ),
                             ],
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            const Icon(Icons.verified, size: 14, color: Colors.blue),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${issue.verificationCount}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        )
-                      ],
-                    )
-                  ],
+                          )
+                        ],
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }

@@ -6,27 +6,33 @@ class SearchFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final hintColor = isDark ? Colors.white60 : Colors.black54;
+    final borderColor = isDark ? Colors.white24 : Colors.black12;
+    final opacity = isDark ? 0.1 : 0.6;
+
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: GlassContainer(
             borderRadius: 30,
             blurX: 10,
             blurY: 10,
-            opacity: 0.1,
+            opacity: opacity,
             backgroundColor: Colors.white,
             borderWidth: 1.0,
-            borderColor: Colors.white24,
+            borderColor: borderColor,
             child: TextField(
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: textColor),
               decoration: InputDecoration(
                 hintText: 'Search issues...',
-                hintStyle: TextStyle(color: Colors.white60),
-                prefixIcon: Icon(Icons.search, color: Colors.white60),
+                hintStyle: TextStyle(color: hintColor),
+                prefixIcon: Icon(Icons.search, color: hintColor),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
             ),
           ),

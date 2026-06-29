@@ -9,6 +9,7 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    name: str | None = None
 
 class UserResponse(BaseModel):
     id: UUID

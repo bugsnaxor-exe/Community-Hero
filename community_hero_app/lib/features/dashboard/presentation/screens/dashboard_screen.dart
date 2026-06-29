@@ -31,25 +31,54 @@ class DashboardScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                     // Top Section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Community Hero',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Row(
+                    ResponsiveBuilder(
+                      builder: (context, sizingInformation) {
+                        final isMobile = sizingInformation.deviceScreenType == DeviceScreenType.mobile;
+                        if (isMobile) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Community Hero',
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const _ThemeToggle(),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              const _GlassSearchBar(width: double.infinity),
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _GlassSearchBar(),
-                            const SizedBox(width: 16),
-                            const _ThemeToggle(),
+                            Text(
+                              'Community Hero',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Row(
+                              children: [
+                                _GlassSearchBar(),
+                                SizedBox(width: 16),
+                                _ThemeToggle(),
+                              ],
+                            ),
                           ],
-                        ),
-                      ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 32),
 
@@ -124,6 +153,10 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 class _GlassSearchBar extends StatelessWidget {
+  final double? width;
+
+  const _GlassSearchBar({this.width = 250});
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -132,7 +165,7 @@ class _GlassSearchBar extends StatelessWidget {
     final borderColor = isDark ? Colors.white24 : Colors.black12;
 
     return GlassContainer(
-      width: 250,
+      width: width,
       height: 48,
       borderRadius: 24,
       blurX: 10,
@@ -196,6 +229,11 @@ class _OpenIssuesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
+    final labelColor = isDark ? Colors.white54 : Colors.black45;
+
     final value = stats?['total_issues'] ?? 127; // Fallback to mockup value
     return NeonCard(
       glowColor: const Color(0xFF00FF5E), // Intense Neon Green
@@ -204,9 +242,9 @@ class _OpenIssuesCard extends StatelessWidget {
         children: [
           Text(
             value.toString(),
-            style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold),
+            style: TextStyle(color: textColor, fontSize: 48, fontWeight: FontWeight.bold),
           ),
-          const Text('Open Issues', style: TextStyle(color: Colors.white70)),
+          Text('Open Issues', style: TextStyle(color: subtitleColor)),
           Expanded(
             child: LineChart(
               LineChartData(
@@ -221,16 +259,16 @@ class _OpenIssuesCard extends StatelessWidget {
                       showTitles: true,
                       reservedSize: 22,
                       getTitlesWidget: (value, meta) {
-                        const style = TextStyle(color: Colors.white54, fontSize: 12);
+                        final style = TextStyle(color: labelColor, fontSize: 12);
                         Widget text;
                         switch (value.toInt()) {
-                          case 0: text = const Text('Mon', style: style); break;
-                          case 1: text = const Text('Tue', style: style); break;
-                          case 2: text = const Text('Wed', style: style); break;
-                          case 3: text = const Text('Thu', style: style); break;
-                          case 4: text = const Text('Fri', style: style); break;
-                          case 5: text = const Text('Sat', style: style); break;
-                          default: text = const Text('', style: style); break;
+                          case 0: text = Text('Mon', style: style); break;
+                          case 1: text = Text('Tue', style: style); break;
+                          case 2: text = Text('Wed', style: style); break;
+                          case 3: text = Text('Thu', style: style); break;
+                          case 4: text = Text('Fri', style: style); break;
+                          case 5: text = Text('Sat', style: style); break;
+                          default: text = Text('', style: style); break;
                         }
                         return Padding(padding: const EdgeInsets.only(top: 8.0), child: text);
                       },
@@ -246,13 +284,11 @@ class _OpenIssuesCard extends StatelessWidget {
                       FlSpot(2, 1.2),
                       FlSpot(3, 2),
                       FlSpot(4, 1.8),
-                      FlSpot(5, 3),
-                      FlSpot(6, 4),
+                      FlSpot(5, 2.5),
                     ],
                     isCurved: true,
                     color: const Color(0xFF00FF5E),
-                    barWidth: 2,
-                    isStrokeCapRound: true,
+                    barWidth: 4,
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
@@ -275,16 +311,21 @@ class _ResolvedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
+    final labelColor = isDark ? Colors.white54 : Colors.black45;
+
     return NeonCard(
       glowColor: const Color(0xFF00B2FF), // Intense Neon Blue
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Text(
+          Text(
             '85%',
-            style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold),
+            style: TextStyle(color: textColor, fontSize: 48, fontWeight: FontWeight.bold),
           ),
-          const Text('Resolved', style: TextStyle(color: Colors.white70)),
+          Text('Resolved', style: TextStyle(color: subtitleColor)),
           Expanded(
             child: Center(
               child: SizedBox(
@@ -299,8 +340,8 @@ class _ResolvedCard extends StatelessWidget {
                       backgroundColor: const Color(0xFF00B2FF).withValues(alpha: 0.2),
                       color: const Color(0xFF00B2FF),
                     ),
-                    const Center(
-                      child: Text('85%', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                    Center(
+                      child: Text('85%', style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 20)),
                     ),
                   ],
                 ),
@@ -308,7 +349,7 @@ class _ResolvedCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text('Community Impact', style: TextStyle(color: Colors.white54, fontSize: 12)),
+          Text('Community Impact', style: TextStyle(color: labelColor, fontSize: 12)),
         ],
       ),
     );
@@ -320,16 +361,21 @@ class _NewVolunteersCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
+    final labelColor = isDark ? Colors.white54 : Colors.black45;
+
     return NeonCard(
       glowColor: const Color(0xFFE228FF), // Intense Neon Magenta
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Text(
+          Text(
             '312',
-            style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold),
+            style: TextStyle(color: textColor, fontSize: 48, fontWeight: FontWeight.bold),
           ),
-          const Text('New Volunteers', style: TextStyle(color: Colors.white70)),
+          Text('New Volunteers', style: TextStyle(color: subtitleColor)),
           Expanded(
             child: BarChart(
               BarChartData(
@@ -344,15 +390,15 @@ class _NewVolunteersCard extends StatelessWidget {
                       showTitles: true,
                       reservedSize: 22,
                       getTitlesWidget: (value, meta) {
-                        const style = TextStyle(color: Colors.white54, fontSize: 12);
+                        final style = TextStyle(color: labelColor, fontSize: 12);
                         Widget text;
                         switch (value.toInt()) {
-                          case 0: text = const Text('11st', style: style); break;
-                          case 1: text = const Text('We', style: style); break;
-                          case 2: text = const Text('Th', style: style); break;
-                          case 3: text = const Text('Fri', style: style); break;
-                          case 4: text = const Text('Sat', style: style); break;
-                          default: text = const Text('', style: style); break;
+                          case 0: text = Text('11st', style: style); break;
+                          case 1: text = Text('We', style: style); break;
+                          case 2: text = Text('Th', style: style); break;
+                          case 3: text = Text('Fri', style: style); break;
+                          case 4: text = Text('Sat', style: style); break;
+                          default: text = Text('', style: style); break;
                         }
                         return Padding(padding: const EdgeInsets.only(top: 8.0), child: text);
                       },

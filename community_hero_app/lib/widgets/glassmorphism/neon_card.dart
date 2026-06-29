@@ -29,19 +29,22 @@ class NeonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBgColor = isDark ? const Color(0xFF0A111F) : const Color(0xFFF8FAFC);
+
     return Container(
       margin: margin,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
           BoxShadow(
-            color: glowColor.withValues(alpha: 0.4),
+            color: glowColor.withValues(alpha: isDark ? 0.4 : 0.2),
             blurRadius: 15,
             spreadRadius: 0,
             offset: const Offset(0, 0),
           ),
           BoxShadow(
-            color: glowColor.withValues(alpha: 0.15),
+            color: glowColor.withValues(alpha: isDark ? 0.15 : 0.08),
             blurRadius: 40,
             spreadRadius: 2,
             offset: const Offset(0, 0),
@@ -55,10 +58,10 @@ class NeonCard extends StatelessWidget {
         borderRadius: borderRadius,
         blurX: blurX,
         blurY: blurY,
-        opacity: 0.95, // Highly opaque to block neon shadow from bleeding through
+        opacity: isDark ? 0.95 : 0.9, // Highly opaque to block neon shadow from bleeding through
         borderWidth: 2.0,
-        borderColor: glowColor, // Inner neon border
-        backgroundColor: const Color(0xFF0A111F), // Dark background blocks shadow bleeding
+        borderColor: glowColor.withValues(alpha: isDark ? 0.8 : 0.5), // Inner neon border
+        backgroundColor: cardBgColor,
         child: child,
       ),
     );

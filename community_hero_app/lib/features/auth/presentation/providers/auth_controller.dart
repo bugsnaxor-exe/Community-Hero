@@ -16,10 +16,10 @@ class AuthController extends AsyncNotifier<void> {
     _authRepository = ref.watch(authRepositoryProvider);
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String email, String password, {String? username}) async {
     state = const AsyncValue.loading();
     try {
-      await _authRepository.login(email, password);
+      await _authRepository.login(email, password, name: username);
       ref.invalidate(profileControllerProvider);
       state = const AsyncValue.data(null);
       return true;

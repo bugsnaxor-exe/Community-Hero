@@ -58,6 +58,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
 
     return Scaffold(
       backgroundColor: scaffoldBgColor,
@@ -88,14 +90,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: textColor,
                         ),
                   ),
                   const SizedBox(height: 32),
                   TextFormField(
                     controller: _usernameController,
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
                       labelText: 'Username',
-                      prefixIcon: Icon(Icons.person_outline),
+                      labelStyle: TextStyle(color: subtextColor),
+                      prefixIcon: Icon(Icons.person_outline, color: subtextColor),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty || value.length < 3) {
@@ -107,9 +112,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
+                      labelStyle: TextStyle(color: subtextColor),
+                      prefixIcon: Icon(Icons.email_outlined, color: subtextColor),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -122,9 +129,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline),
+                      labelStyle: TextStyle(color: subtextColor),
+                      prefixIcon: Icon(Icons.lock_outline, color: subtextColor),
                     ),
                     obscureText: true,
                     validator: (value) {

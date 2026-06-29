@@ -22,13 +22,14 @@ class AuthRepository {
   })  : _dio = dio,
         _secureStorage = secureStorage;
 
-  Future<void> login(String email, String password) async {
+  Future<void> login(String email, String password, {String? name}) async {
     try {
       final response = await _dio.post(
         '/auth/login',
         data: {
           'email': email,
           'password': password,
+          if (name != null) 'name': name,
         },
       );
 

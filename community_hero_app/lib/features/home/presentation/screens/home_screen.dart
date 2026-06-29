@@ -18,10 +18,19 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Community Hero', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Community Hero',
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.white),
+            icon: Icon(
+              Icons.notifications_none,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+            ),
             onPressed: () {},
           ),
         ],
@@ -109,6 +118,10 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildSectionTitle(BuildContext context, String title, VoidCallback onSeeAll) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
@@ -118,12 +131,12 @@ class HomeScreen extends ConsumerWidget {
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: textColor,
                 ),
           ),
           TextButton(
             onPressed: () => context.go('/feed'),
-            child: const Text('See All', style: TextStyle(color: Colors.white70)),
+            child: Text('See All', style: TextStyle(color: subtextColor)),
           ),
         ],
       ),

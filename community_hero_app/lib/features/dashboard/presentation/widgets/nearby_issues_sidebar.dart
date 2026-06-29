@@ -8,6 +8,11 @@ class NearbyIssuesSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
+    final hintColor = isDark ? Colors.white38 : Colors.black38;
+
     // Mock data for UI layout
     final issues = [
       Issue(id: '1', title: 'Pothole on Elm St', description: '', category: 'Infrastructure', severity: 'High', latitude: 0, longitude: 0, status: 'Open', createdAt: DateTime.now()),
@@ -22,7 +27,7 @@ class NearbyIssuesSidebar extends StatelessWidget {
         borderRadius: 24,
         blurX: 30,
         blurY: 30,
-        opacity: 0.1,
+        opacity: isDark ? 0.1 : 0.7,
         backgroundColor: Colors.white,
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -31,16 +36,16 @@ class NearbyIssuesSidebar extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Nearby Issues',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: textColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.more_horiz, color: Colors.white70),
+                  icon: Icon(Icons.more_horiz, color: subtextColor),
                   onPressed: () {},
                 ),
               ],
@@ -60,19 +65,19 @@ class NearbyIssuesSidebar extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       blurX: 5,
                       blurY: 5,
-                      opacity: 0.1,
+                      opacity: isDark ? 0.1 : 0.4,
+                      backgroundColor: Colors.white,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Map icon placeholder
                           Container(
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.map, color: Colors.white70),
+                            child: Icon(Icons.map, color: subtextColor),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -85,21 +90,21 @@ class NearbyIssuesSidebar extends StatelessWidget {
                                     Expanded(
                                       child: Text(
                                         issue.title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
+                                        style: TextStyle(
+                                          color: textColor,
                                           fontWeight: FontWeight.w600,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const Icon(Icons.more_horiz, color: Colors.white60, size: 16),
+                                    Icon(Icons.more_horiz, color: hintColor, size: 16),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   '- ${index + 1}h ago',
-                                  style: const TextStyle(
-                                    color: Colors.white60,
+                                  style: TextStyle(
+                                    color: subtextColor,
                                     fontSize: 12,
                                   ),
                                 ),

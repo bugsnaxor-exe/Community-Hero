@@ -13,12 +13,14 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -28,6 +30,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final success = await ref.read(authControllerProvider.notifier).login(
             _emailController.text.trim(),
             _passwordController.text,
+            username: _usernameController.text.trim().isNotEmpty
+                ? _usernameController.text.trim()
+                : null,
           );
       if (success && mounted) {
         context.go('/home');
@@ -57,6 +62,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
 
     return Scaffold(
       backgroundColor: scaffoldBgColor,
@@ -78,14 +85,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: textColor,
                         ),
                   ),
                   const SizedBox(height: 32),
                   TextFormField(
+                    controller: _usernameController,
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      labelStyle: TextStyle(color: subtextColor),
+                      prefixIcon: Icon(Icons.person_outline, color: subtextColor),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your username';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
+                      labelStyle: TextStyle(color: subtextColor),
+                      prefixIcon: Icon(Icons.email_outlined, color: subtextColor),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -98,12 +124,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
+                    style: TextStyle(color: textColor),
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      labelStyle: TextStyle(color: subtextColor),
+                      prefixIcon: Icon(Icons.lock_outline, color: subtextColor),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          color: subtextColor,
                         ),
                         onPressed: () {
                           setState(() {
