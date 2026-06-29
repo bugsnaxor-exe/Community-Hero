@@ -35,7 +35,51 @@ Description: {description}
 Reporter Account: {reporter_email}
 """
     
-    # Check if credentials are set
+    # Try sending via Resend HTTP API first if configured (bypasses cloud SMTP port blocks)
+    resend_api_key = getattr(settings, "RESEND_API_KEY", "")
+    if resend_api_key:
+        try:
+            import requests
+            # Resend free tier allows sending to the account owner from onboarding@resend.dev
+            payload = {
+                "from": "Community Hero <onboarding@resend.dev>",
+                "to": [to_email],
+                "subject": subject,
+                "text": body
+            }
+            # Attach base64 files if present
+            # (Resend accepts attachments list in JSON)
+            attachments = []
+            for path in image_paths:
+                if os.path.exists(path):
+                    import base64
+                    with open(path, "rb") as f:
+                        content_b64 = base64.b64encode(f.read()).decode("utf-8")
+                    attachments.append({
+                        "content": content_b64,
+                        "filename": os.path.basename(path)
+                    })
+            if attachments:
+                payload["attachments"] = attachments
+
+            response = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json=payload,
+                timeout=15
+            )
+            if response.status_code in [200, 201]:
+                logger.info(f"Email sent successfully via Resend API to {to_email}")
+                return True
+            else:
+                logger.error(f"Resend API returned error {response.status_code}: {response.text}")
+        except Exception as e:
+            logger.error(f"Failed to send email via Resend API: {e}")
+
+    # Check if SMTP credentials are set
     smtp_host = getattr(settings, "SMTP_HOST", "")
     smtp_port = getattr(settings, "SMTP_PORT", 587)
     smtp_user = getattr(settings, "SMTP_USER", "")
@@ -71,16 +115,16 @@ Reporter Account: {reporter_email}
                 msg.attach(part)
 
         if smtp_port == 465:
-            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
         else:
-            server = smtplib.SMTP(smtp_host, smtp_port)
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
             server.starttls()
             
         server.login(smtp_user, smtp_password)
         server.send_message(msg)
         server.quit()
-        logger.info(f"Email sent successfully to {to_email}")
+        logger.info(f"Email sent successfully via SMTP to {to_email}")
         return True
     except Exception as e:
-        logger.error(f"Failed to send email: {e}")
+        logger.error(f"Failed to send email via SMTP: {e}")
         return False
