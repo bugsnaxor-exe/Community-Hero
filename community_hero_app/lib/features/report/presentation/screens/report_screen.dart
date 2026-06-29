@@ -173,11 +173,19 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
             images: _images,
           );
           
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Report submitted successfully!'), backgroundColor: Colors.green),
-        );
-        context.go('/dashboard'); // Redirect back to dashboard
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Report submitted successfully!'), backgroundColor: Colors.green),
+          );
+          context.go('/dashboard'); // Redirect back to dashboard
+        } else {
+          final errorState = ref.read(reportControllerProvider);
+          final errorMsg = errorState.error?.toString() ?? 'Failed to submit report. Please try again.';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+          );
+        }
       }
     }
   }
