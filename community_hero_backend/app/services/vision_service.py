@@ -18,97 +18,100 @@ def encode_image_to_base64(image_path: str) -> str:
 import json
 import re
 
+# Models to try in order — first available one wins
+MODELS = [
+    "google/gemini-2.5-flash-preview",
+    "google/gemini-1.5-flash",
+]
+
 def analyze_issue_image(image_path: str) -> dict:
     """
     Sends the image to Google Gemini Vision to extract rich metadata.
     Returns a dictionary with: category, confidence, severity, reasoning.
-    Defaults to treating images as VALID to avoid false rejections.
+    Returns empty dict {} on failure so the caller can decide what to do.
     """
     if not settings.OPENROUTER_API_KEY:
         logger.warning("OPENROUTER_API_KEY is not set. Skipping vision analysis.")
-        return {"category": "other", "confidence": 0.5, "severity": 3.0, "reasoning": "No API key configured."}
+        return {}
 
     try:
         base64_image = encode_image_to_base64(image_path)
         logger.info(f"Analyzing image: {image_path} (base64 length: {len(base64_image)})")
 
-        prompt = """You are analyzing a photo uploaded by a citizen to report a community infrastructure problem.
+        prompt = """You are a strict image validator for a civic issue reporting app. Analyze this image and return RAW JSON only (no markdown, no backticks, no extra text).
 
-Your job: classify the photo into one of these categories and return RAW JSON (no markdown, no backticks).
+JSON format:
+{"category": "...", "confidence": 0.0, "severity": 0.0, "reasoning": "..."}
 
-JSON keys:
-- "category": one of ["pothole", "water_leakage", "garbage_dump", "broken_streetlight", "road_damage", "drainage_issue", "other", "invalid"]
-- "confidence": float 0.0 to 1.0
-- "severity": float 0.0 to 10.0
-- "reasoning": one sentence explanation
+CATEGORY must be exactly one of: "pothole", "water_leakage", "garbage_dump", "broken_streetlight", "road_damage", "drainage_issue", "other", "invalid"
 
-WHEN TO USE "invalid":
-Use "invalid" ONLY for images that are clearly NOT photographs of real-world scenes. Examples:
-- Screenshots of apps, websites, games, or text messages
-- Memes, cartoons, or digitally generated graphics
-- QR codes or barcodes
-- Selfies or portraits with no infrastructure visible
+RULES:
+1. "invalid" — Use this if the image is a DIGITAL screenshot (showing app UI, website, chat, game, code editor), a meme, a QR code, a document scan, a selfie/portrait, food, or an indoor household object with no civic relevance. If you see UI elements like buttons, navigation bars, status bars, or app interfaces, it is DEFINITELY "invalid".
 
-WHEN TO USE ANY OTHER CATEGORY:
-If the image is a photograph taken outdoors showing ANY of these, it is VALID:
-- Roads, streets, pavements, sidewalks (even close-ups)
-- Holes, cracks, broken surfaces on roads
-- Garbage, litter, waste on streets or public areas
-- Street lights, utility poles, pipes, drains
-- Construction debris, broken infrastructure
-- ANY outdoor public space
+2. ANY other category — Use if the image is a real-world photograph showing outdoor infrastructure, roads, streets, potholes, broken pavement, garbage, streetlights, drainage, water damage, or any public space. Close-up photos of road damage ARE valid potholes. Dark, blurry, or poorly-lit outdoor photos ARE still valid.
 
-IMPORTANT: When in doubt, classify as "other" — NEVER as "invalid". Real photos of roads, even blurry or dark ones, are ALWAYS valid."""
+3. When uncertain between "invalid" and a real category, choose "other" (NOT "invalid").
 
-        response = client.chat.completions.create(
-            model="google/gemini-2.0-flash-001",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
+Return ONLY the JSON object, nothing else."""
+
+        # Try models in priority order
+        last_error = None
+        for model_id in MODELS:
+            try:
+                logger.info(f"Trying model: {model_id}")
+                response = client.chat.completions.create(
+                    model=model_id,
+                    messages=[
                         {
-                            "type": "text",
-                            "text": prompt
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}"
-                            }
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": prompt
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/jpeg;base64,{base64_image}"
+                                    }
+                                }
+                            ]
                         }
-                    ]
-                }
-            ],
-            max_tokens=300,
-        )
+                    ],
+                    max_tokens=300,
+                )
+                
+                answer = response.choices[0].message.content.strip()
+                logger.info(f"Raw AI response from {model_id}: {answer}")
+                
+                # Clean up any potential markdown code blocks
+                if answer.startswith("```json"):
+                    answer = answer[7:]
+                if answer.startswith("```"):
+                    answer = answer[3:]
+                if answer.endswith("```"):
+                    answer = answer[:-3]
+                
+                # Try to extract JSON from the response even if surrounded by text
+                answer = answer.strip()
+                json_match = re.search(r'\{[^{}]*\}', answer, re.DOTALL)
+                if json_match:
+                    answer = json_match.group(0)
+                    
+                data = json.loads(answer.strip())
+                logger.info(f"Parsed AI result: category={data.get('category')}, confidence={data.get('confidence')}, severity={data.get('severity')}, reasoning={data.get('reasoning')}")
+                return data
+                
+            except Exception as model_error:
+                logger.warning(f"Model {model_id} failed: {model_error}")
+                last_error = model_error
+                continue
         
-        answer = response.choices[0].message.content.strip()
-        logger.info(f"Raw AI response: {answer}")
+        # All models failed
+        logger.error(f"All models failed. Last error: {last_error}")
+        return {}
         
-        # Clean up any potential markdown code blocks
-        if answer.startswith("```json"):
-            answer = answer[7:]
-        if answer.startswith("```"):
-            answer = answer[3:]
-        if answer.endswith("```"):
-            answer = answer[:-3]
-        
-        # Try to extract JSON from the response even if surrounded by text
-        answer = answer.strip()
-        json_match = re.search(r'\{[^{}]*\}', answer, re.DOTALL)
-        if json_match:
-            answer = json_match.group(0)
-            
-        data = json.loads(answer.strip())
-        logger.info(f"Parsed AI result: category={data.get('category')}, confidence={data.get('confidence')}, severity={data.get('severity')}")
-        return data
-        
-    except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse AI JSON response: {e}. Raw: {answer if 'answer' in dir() else 'N/A'}")
-        # Default to valid on parse failure
-        return {"category": "other", "confidence": 0.5, "severity": 3.0, "reasoning": "AI response could not be parsed. Defaulting to valid."}
     except Exception as e:
         logger.error(f"Error in vision analysis: {str(e)}")
-        # Default to valid on any error — never block the user due to API issues
-        return {"category": "other", "confidence": 0.5, "severity": 3.0, "reasoning": "Analysis service temporarily unavailable. Defaulting to valid."}
+        return {}
 
