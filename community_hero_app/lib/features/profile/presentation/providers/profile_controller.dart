@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/user.dart';
+import '../../../../models/issue.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../data/profile_repository.dart';
 
@@ -25,3 +26,13 @@ class ProfileController extends AutoDisposeAsyncNotifier<User> {
     state = await AsyncValue.guard(() => ref.read(profileRepositoryProvider).getUserProfile());
   }
 }
+
+final myReportedIssuesProvider = FutureProvider.autoDispose<List<Issue>>((ref) async {
+  final repository = ref.watch(profileRepositoryProvider);
+  return repository.getMyReportedIssues();
+});
+
+final myVerifiedIssuesProvider = FutureProvider.autoDispose<List<Issue>>((ref) async {
+  final repository = ref.watch(profileRepositoryProvider);
+  return repository.getMyVerifiedIssues();
+});

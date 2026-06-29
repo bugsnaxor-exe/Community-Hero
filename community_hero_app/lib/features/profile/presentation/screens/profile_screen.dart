@@ -4,7 +4,87 @@ import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/providers/auth_controller.dart';
 import '../providers/profile_controller.dart';
 import '../../../../models/user.dart';
-import '../../../../theme/theme_provider.dart';
+import '../../../../models/issue.dart';
+import '../../../home/presentation/widgets/issue_card.dart';
+
+final profileSubTabProvider = StateProvider.autoDispose<String>((ref) => 'reported');
+
+class BadgeItem {
+  final String title;
+  final String description;
+  final IconData icon;
+  final bool isUnlocked;
+  final Color color;
+
+  BadgeItem({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.isUnlocked,
+    required this.color,
+  });
+}
+
+List<BadgeItem> calculateBadges(User user, int reportedCount, int verifiedCount) {
+  return [
+    BadgeItem(
+      title: 'Green Citizen',
+      description: 'Reported your first community issue',
+      icon: Icons.eco,
+      isUnlocked: reportedCount >= 1,
+      color: Colors.green,
+    ),
+    BadgeItem(
+      title: 'Eco Watchdog',
+      description: 'Reported 5 or more community issues',
+      icon: Icons.shield,
+      isUnlocked: reportedCount >= 5,
+      color: Colors.teal,
+    ),
+    BadgeItem(
+      title: 'Community Pillar',
+      description: 'Reported 10 or more community issues',
+      icon: Icons.domain,
+      isUnlocked: reportedCount >= 10,
+      color: Colors.indigo,
+    ),
+    BadgeItem(
+      title: 'First Responder',
+      description: 'Verified your first community issue',
+      icon: Icons.flash_on,
+      isUnlocked: verifiedCount >= 1,
+      color: Colors.amber,
+    ),
+    BadgeItem(
+      title: 'Truth Seeker',
+      description: 'Verified 5 or more community issues',
+      icon: Icons.verified_user,
+      isUnlocked: verifiedCount >= 5,
+      color: Colors.blue,
+    ),
+    BadgeItem(
+      title: 'Local Hero',
+      description: 'Verified 15 or more community issues',
+      icon: Icons.stars,
+      isUnlocked: verifiedCount >= 15,
+      color: Colors.purple,
+    ),
+    BadgeItem(
+      title: 'Rising Star',
+      description: 'Reached Level 2',
+      icon: Icons.trending_up,
+      isUnlocked: user.level >= 2,
+      color: Colors.orange,
+    ),
+    BadgeItem(
+      title: 'Veteran Defender',
+      description: 'Reached Level 5',
+      icon: Icons.military_tech,
+      isUnlocked: user.level >= 5,
+      color: Colors.red,
+    ),
+  ];
+}
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -26,7 +106,11 @@ class ProfileScreen extends ConsumerWidget {
       body: profileState.when(
         data: (user) {
           return RefreshIndicator(
-            onRefresh: () => ref.read(profileControllerProvider.notifier).refresh(),
+            onRefresh: () async {
+              ref.read(profileControllerProvider.notifier).refresh();
+              ref.invalidate(myReportedIssuesProvider);
+              ref.invalidate(myVerifiedIssuesProvider);
+            },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
@@ -35,7 +119,7 @@ class ProfileScreen extends ConsumerWidget {
                   Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.12)),
                   _GamificationStats(user: user),
                   Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.12)),
-                  _RecentActivityTab(),
+                  _ProfileTabContent(user: user),
                   const SizedBox(height: 24),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -159,17 +243,24 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-class _GamificationStats extends StatelessWidget {
+class _GamificationStats extends ConsumerWidget {
   final User user;
 
   const _GamificationStats({required this.user});
 
   @override
-  Widget build(BuildContext context) {
-    // Dummy next level calculation
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentLevelBaseXP = (user.level - 1) * 200;
     final nextLevelXP = user.level * 200;
     final progress = (user.reputationScore - currentLevelBaseXP) / (nextLevelXP - currentLevelBaseXP);
+
+    final reportedAsync = ref.watch(myReportedIssuesProvider);
+    final verifiedAsync = ref.watch(myVerifiedIssuesProvider);
+    final selectedTab = ref.watch(profileSubTabProvider);
+
+    final reportedCount = reportedAsync.valueOrNull?.length ?? 0;
+    final verifiedCount = verifiedAsync.valueOrNull?.length ?? 0;
+    final badgesCount = calculateBadges(user, reportedCount, verifiedCount).where((b) => b.isUnlocked).length;
 
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -192,12 +283,38 @@ class _GamificationStats extends StatelessWidget {
             borderRadius: BorderRadius.circular(5),
           ),
           const SizedBox(height: 24),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _StatItem(icon: Icons.report_problem, value: '12', label: 'Reported'),
-              _StatItem(icon: Icons.check_circle, value: '45', label: 'Verified'),
-              _StatItem(icon: Icons.military_tech, value: '3', label: 'Badges'),
+              _StatItem(
+                icon: Icons.report_problem,
+                value: reportedAsync.when(
+                  data: (list) => '${list.length}',
+                  loading: () => '...',
+                  error: (_, __) => '0',
+                ),
+                label: 'Reported',
+                isSelected: selectedTab == 'reported',
+                onTap: () => ref.read(profileSubTabProvider.notifier).state = 'reported',
+              ),
+              _StatItem(
+                icon: Icons.check_circle,
+                value: verifiedAsync.when(
+                  data: (list) => '${list.length}',
+                  loading: () => '...',
+                  error: (_, __) => '0',
+                ),
+                label: 'Verified',
+                isSelected: selectedTab == 'verified',
+                onTap: () => ref.read(profileSubTabProvider.notifier).state = 'verified',
+              ),
+              _StatItem(
+                icon: Icons.military_tech,
+                value: '$badgesCount',
+                label: 'Badges',
+                isSelected: selectedTab == 'badges',
+                onTap: () => ref.read(profileSubTabProvider.notifier).state = 'badges',
+              ),
             ],
           ),
         ],
@@ -210,51 +327,293 @@ class _StatItem extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-  const _StatItem({required this.icon, required this.value, required this.label});
+  const _StatItem({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, size: 32, color: Theme.of(context).primaryColor),
-        const SizedBox(height: 8),
-        Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Theme.of(context).colorScheme.onSurface)),
-        Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 12)),
-      ],
+    final activeColor = Theme.of(context).primaryColor;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withOpacity(0.08) : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? activeColor.withOpacity(0.3) : Colors.transparent,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected ? activeColor : textColor.withOpacity(0.6),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: isSelected ? activeColor : textColor,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? activeColor : textColor.withOpacity(0.7),
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _RecentActivityTab extends StatelessWidget {
+class _ProfileTabContent extends ConsumerWidget {
+  final User user;
+
+  const _ProfileTabContent({required this.user});
+
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Recent Activity', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Theme.of(context).colorScheme.onSurface)),
-          const SizedBox(height: 16),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 3,
-            itemBuilder: (context, index) {
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                  child: const Icon(Icons.verified, color: Colors.blue),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTab = ref.watch(profileSubTabProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
+    switch (selectedTab) {
+      case 'reported':
+        final reportedAsync = ref.watch(myReportedIssuesProvider);
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'My Reported Issues',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor),
+              ),
+              const SizedBox(height: 16),
+              reportedAsync.when(
+                data: (issues) {
+                  if (issues.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
+                        child: Text(
+                          'You haven\'t reported any issues yet.',
+                          style: TextStyle(color: textColor.withOpacity(0.6)),
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: issues.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: IssueCard(issue: issues[index]),
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.0),
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
-                title: Text('Verified an issue in Park #${index + 1}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-                subtitle: Text('2 hours ago', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
-                trailing: const Text('+10 XP', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
-              );
-            },
+                error: (error, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: Text('Error loading issues: $error', style: const TextStyle(color: Colors.redAccent)),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
+
+      case 'verified':
+        final verifiedAsync = ref.watch(myVerifiedIssuesProvider);
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'My Verified Issues',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor),
+              ),
+              const SizedBox(height: 16),
+              verifiedAsync.when(
+                data: (issues) {
+                  if (issues.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
+                        child: Text(
+                          'You haven\'t verified any issues yet.',
+                          style: TextStyle(color: textColor.withOpacity(0.6)),
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: issues.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: IssueCard(issue: issues[index]),
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (error, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: Text('Error loading verifications: $error', style: const TextStyle(color: Colors.redAccent)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+      case 'badges':
+        final reportedAsync = ref.watch(myReportedIssuesProvider);
+        final verifiedAsync = ref.watch(myVerifiedIssuesProvider);
+
+        final reportedCount = reportedAsync.valueOrNull?.length ?? 0;
+        final verifiedCount = verifiedAsync.valueOrNull?.length ?? 0;
+        final badges = calculateBadges(user, reportedCount, verifiedCount);
+
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'My Achievements & Badges',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor),
+              ),
+              const SizedBox(height: 16),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.1,
+                ),
+                itemCount: badges.length,
+                itemBuilder: (context, index) {
+                  final badge = badges[index];
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: badge.isUnlocked
+                          ? badge.color.withOpacity(0.08)
+                          : (isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.02)),
+                      border: Border.all(
+                        color: badge.isUnlocked
+                            ? badge.color.withOpacity(0.3)
+                            : (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: badge.isUnlocked
+                                  ? badge.color.withOpacity(0.2)
+                                  : Colors.grey.withOpacity(0.2),
+                              child: Icon(
+                                badge.icon,
+                                size: 28,
+                                color: badge.isUnlocked ? badge.color : Colors.grey,
+                              ),
+                            ),
+                            if (!badge.isUnlocked)
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.lock, size: 12, color: Colors.grey),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          badge.title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: badge.isUnlocked ? textColor : textColor.withOpacity(0.5),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          badge.description,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: textColor.withOpacity(0.4),
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

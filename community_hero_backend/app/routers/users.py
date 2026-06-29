@@ -28,6 +28,20 @@ def read_user_issues(
     issues = db.query(Issue).filter(Issue.reporter_id == current_user.id).all()
     return issues
 
+@router.get("/me/verifications", response_model=List[IssueResponse])
+def read_user_verifications(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get all issues verified by the current user.
+    """
+    from app.models.issue import IssueVerification
+    verifications = db.query(IssueVerification).filter(IssueVerification.user_id == current_user.id).all()
+    issue_ids = [v.issue_id for v in verifications]
+    issues = db.query(Issue).filter(Issue.id.in_(issue_ids)).all() if issue_ids else []
+    return issues
+
 @router.get("/leaderboard", response_model=List[UserResponse])
 def get_leaderboard(
     limit: int = 10,
