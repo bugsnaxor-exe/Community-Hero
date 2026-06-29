@@ -55,7 +55,6 @@ app.include_router(notifications.router, prefix="/api/notifications", tags=["not
 @app.get("/api/test-smtp")
 def test_smtp_endpoint():
     import smtplib
-    import requests
     from email.mime.text import MIMEText
     from app.core.config import settings
     
@@ -77,35 +76,41 @@ def test_smtp_endpoint():
     # 1. Try Resend if configured
     if resend_api_key:
         try:
+            import urllib.request
+            import json
             payload = {
                 "from": "Community Hero <onboarding@resend.dev>",
                 "to": ["sayantan05092004@gmail.com"],
                 "subject": "[Community Hero] Live Render Resend Diagnostic",
                 "text": "This is a live diagnostic email sent from the Render server using the Resend HTTP API fallback."
             }
-            res = requests.post(
+            req = urllib.request.Request(
                 "https://api.resend.com/emails",
+                data=json.dumps(payload).encode("utf-8"),
                 headers={
                     "Authorization": f"Bearer {resend_api_key}",
                     "Content-Type": "application/json"
                 },
-                json=payload,
-                timeout=10
+                method="POST"
             )
-            if res.status_code in [200, 201]:
+            with urllib.request.urlopen(req, timeout=10) as response:
+                response_code = response.getcode()
+                response_text = response.read().decode("utf-8")
+                
+            if response_code in [200, 201]:
                 return {
                     "status": "success",
                     "method": "Resend HTTP API",
-                    "response_code": res.status_code,
-                    "response_text": res.text,
+                    "response_code": response_code,
+                    "response_text": response_text,
                     "details": status_info
                 }
             else:
                 return {
                     "status": "failed",
                     "method": "Resend HTTP API",
-                    "response_code": res.status_code,
-                    "response_text": res.text,
+                    "response_code": response_code,
+                    "response_text": response_text,
                     "details": status_info
                 }
         except Exception as e:

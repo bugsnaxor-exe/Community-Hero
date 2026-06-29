@@ -39,7 +39,8 @@ Reporter Account: {reporter_email}
     resend_api_key = getattr(settings, "RESEND_API_KEY", "")
     if resend_api_key:
         try:
-            import requests
+            import urllib.request
+            import json
             # Resend free tier allows sending to the account owner from onboarding@resend.dev
             payload = {
                 "from": "Community Hero <onboarding@resend.dev>",
@@ -62,20 +63,25 @@ Reporter Account: {reporter_email}
             if attachments:
                 payload["attachments"] = attachments
 
-            response = requests.post(
+            req = urllib.request.Request(
                 "https://api.resend.com/emails",
+                data=json.dumps(payload).encode("utf-8"),
                 headers={
                     "Authorization": f"Bearer {resend_api_key}",
                     "Content-Type": "application/json"
                 },
-                json=payload,
-                timeout=15
+                method="POST"
             )
-            if response.status_code in [200, 201]:
+            
+            with urllib.request.urlopen(req, timeout=15) as response:
+                response_code = response.getcode()
+                response_text = response.read().decode("utf-8")
+                
+            if response_code in [200, 201]:
                 logger.info(f"Email sent successfully via Resend API to {to_email}")
                 return True
             else:
-                logger.error(f"Resend API returned error {response.status_code}: {response.text}")
+                logger.error(f"Resend API returned error {response_code}: {response_text}")
         except Exception as e:
             logger.error(f"Failed to send email via Resend API: {e}")
 
