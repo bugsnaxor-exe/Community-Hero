@@ -177,12 +177,12 @@ class IssueDetailsScreen extends ConsumerWidget {
                           onPressed: state.isVerifying
                               ? null
                               : () async {
-                                  final success = await ref.read(issueDetailsProvider(issueId).notifier).verifyIssue();
+                                  final errorMsg = await ref.read(issueDetailsProvider(issueId).notifier).verifyIssue();
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(success ? 'Issue verified successfully!' : 'Verification failed.'),
-                                        backgroundColor: success ? Colors.green : Colors.red,
+                                        content: Text(errorMsg == null ? 'Issue verified successfully!' : errorMsg),
+                                        backgroundColor: errorMsg == null ? Colors.green : Colors.red,
                                       ),
                                     );
                                   }

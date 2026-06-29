@@ -50,9 +50,9 @@ class IssueDetailsController extends FamilyAsyncNotifier<IssueDetailsState, Stri
     );
   }
 
-  Future<bool> verifyIssue() async {
+  Future<String?> verifyIssue() async {
     final currentState = state.value;
-    if (currentState == null || currentState.issue == null) return false;
+    if (currentState == null || currentState.issue == null) return "Issue data not loaded.";
 
     state = AsyncValue.data(currentState.copyWith(isVerifying: true));
 
@@ -69,16 +69,15 @@ class IssueDetailsController extends FamilyAsyncNotifier<IssueDetailsState, Stri
           issue: updatedIssue,
           isVerifying: false,
         ));
-        return true;
+        return null;
       } else {
         state = AsyncValue.data(currentState.copyWith(isVerifying: false));
-        return false;
+        return "Verification failed.";
       }
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      // Revert verifying state
+    } catch (e) {
       state = AsyncValue.data(currentState.copyWith(isVerifying: false));
-      return false;
+      final msg = e.toString().replaceAll("Exception: ", "").replaceAll("AppException: ", "").replaceAll("NetworkException: ", "");
+      return msg;
     }
   }
 }

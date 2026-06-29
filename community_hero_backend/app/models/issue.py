@@ -29,6 +29,7 @@ class IssueStatus(str, enum.Enum):
 class Issue(BaseModel):
     __tablename__ = "issues"
     reporter_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    title = Column(String, default="Unknown Title")
     category = Column(SQLEnum(IssueCategory))
     description = Column(Text)
     lat = Column(Float)

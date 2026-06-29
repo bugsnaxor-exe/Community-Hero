@@ -1,16 +1,18 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
 from app.models.issue import IssueCategory, IssueStatus, VoteType
 
 class IssueCreate(BaseModel):
+    title: Optional[str] = "Unknown Title"
     category: IssueCategory
     description: str
     lat: float = Field(..., ge=-90, le=90, description="Latitude must be between -90 and 90")
     lng: float = Field(..., ge=-180, le=180, description="Longitude must be between -180 and 180")
 
 class IssueUpdate(BaseModel):
+    title: Optional[str] = None
     category: Optional[IssueCategory] = None
     description: Optional[str] = None
     status: Optional[IssueStatus] = None
@@ -18,6 +20,7 @@ class IssueUpdate(BaseModel):
 class IssueResponse(BaseModel):
     id: UUID
     reporter_id: UUID
+    title: Optional[str] = "Unknown Title"
     category: IssueCategory
     description: str
     status: IssueStatus
@@ -25,9 +28,23 @@ class IssueResponse(BaseModel):
     lng: float
     ai_category: Optional[str] = None
     ai_confidence: Optional[float] = None
-    severity: Optional[float] = None
+    severity: Optional[str] = None
     ai_reasoning: Optional[str] = None
     
+    @field_validator('severity', mode='before')
+    @classmethod
+    def serialize_severity(cls, v):
+        if isinstance(v, (int, float)):
+            if v >= 9.0:
+                return "Critical"
+            elif v >= 7.0:
+                return "High"
+            elif v >= 4.0:
+                return "Medium"
+            else:
+                return "Low"
+        return v or "Low"
+
     class Config:
         from_attributes = True
 
@@ -45,6 +62,8 @@ class IssueDetailResponse(IssueResponse):
 
 class IssueVerificationCreate(BaseModel):
     vote: VoteType = VoteType.CONFIRM
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class IssueVerificationResponse(BaseModel):
     id: UUID

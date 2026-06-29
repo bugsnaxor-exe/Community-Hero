@@ -28,9 +28,9 @@ class IssueDetailsRepository {
   Future<bool> verifyIssue(String id, double latitude, double longitude) async {
     try {
       final response = await _dio.post(
-        '/verifications/issue/$id',
+        '/issues/$id/verify',
         data: {
-          'is_valid': true,
+          'vote': 'CONFIRM',
           'latitude': latitude,
           'longitude': longitude,
         },

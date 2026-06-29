@@ -34,6 +34,19 @@ os.makedirs("static/uploads", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+
+@app.on_event("startup")
+def configure_db():
+    from app.core.database import SessionLocal
+    db = SessionLocal()
+    try:
+        db.execute(text("ALTER TABLE issues ADD COLUMN IF NOT EXISTS title VARCHAR DEFAULT 'Unknown Title';"))
+        db.commit()
+        logger.info("Database migration completed: title column exists in issues table.")
+    except Exception as e:
+        logger.warning(f"Could not run inline migration for title column: {e}")
+    finally:
+        db.close()
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(issues.router, prefix="/api/issues", tags=["issues"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])

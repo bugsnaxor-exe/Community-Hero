@@ -1,10 +1,10 @@
 import os
 import shutil
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from app.core.database import get_db
 from app.routers.deps import get_current_user
@@ -14,11 +14,46 @@ from app.models.notification import Notification
 from app.schemas.issue import IssueCreate, IssueUpdate, IssueResponse, IssueDetailResponse, IssueVerificationCreate, IssueVerificationResponse, IssueStatusUpdate, StatusHistoryResponse
 from app.services.vision_service import analyze_issue_image
 from app.services.duplicate_service import DuplicateDetectionService
+from app.services.email_service import send_issue_email
 
 router = APIRouter()
 
 @router.post("/", response_model=IssueResponse)
-def create_issue(issue_in: IssueCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_issue(
+    title: Optional[str] = Form("Unknown Title"),
+    category: str = Form(...),
+    description: str = Form(""),
+    latitude: float = Form(...),
+    longitude: float = Form(...),
+    severity: str = Form("Low"),
+    images: List[UploadFile] = File(default=[]),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Filter out empty files
+    valid_images = [img for img in images if img.filename]
+    
+    # 1. Enforce min 1 and max 6 images
+    if len(valid_images) < 1:
+        raise HTTPException(
+            status_code=400, 
+            detail="At least 1 image is required to submit a report."
+        )
+    if len(valid_images) > 6:
+        raise HTTPException(
+            status_code=400, 
+            detail="Maximum of 6 images allowed per report."
+        )
+
+    # Reconstruct IssueCreate for duplicate checking
+    issue_in = IssueCreate(
+        title=title,
+        category=category,
+        description=description,
+        lat=latitude,
+        lng=longitude
+    )
+
     # --- Duplicate Detection ---
     duplicate = DuplicateDetectionService.find_duplicate(db, issue_in, radius_meters=50.0, similarity_threshold=0.8)
     if duplicate:
@@ -29,12 +64,157 @@ def create_issue(issue_in: IssueCreate, db: Session = Depends(get_db), current_u
                 "duplicate_issue_id": str(duplicate.id)
             }
         )
+
+    # Map frontend severity string to float rating
+    severity_map = {
+        "low": 2.5,
+        "medium": 5.0,
+        "high": 7.5,
+        "critical": 10.0
+    }
+    severity_float = severity_map.get(severity.lower(), 1.0)
         
-    new_issue = Issue(**issue_in.model_dump(), reporter_id=current_user.id)
+    new_issue = Issue(
+        title=title,
+        reporter_id=current_user.id,
+        category=category,
+        description=description,
+        lat=latitude,
+        lng=longitude,
+        severity=severity_float,
+        status=IssueStatus.REPORTED
+    )
     db.add(new_issue)
     db.commit()
     db.refresh(new_issue)
+
+    # Save images and run vision analysis
+    upload_dir = "static/uploads"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    saved_paths = []
+    try:
+        for file in valid_images:
+            file_extension = file.filename.split(".")[-1].lower()
+            new_filename = f"{uuid.uuid4()}.{file_extension}"
+            file_path = os.path.join(upload_dir, new_filename)
+            
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+                
+            saved_paths.append(file_path)
+            
+            image_url = f"/static/uploads/{new_filename}"
+            issue_image = IssueImage(issue_id=new_issue.id, image_url=image_url)
+            db.add(issue_image)
+            
+        db.commit()
+        
+        # Run AI Vision check on the first image
+        if saved_paths:
+            ai_data = analyze_issue_image(saved_paths[0])
+            if ai_data:
+                # 2. Reject if the AI determines the image does not represent a valid community issue
+                if ai_data.get("category") == "invalid":
+                    # Clean up DB records and files
+                    db.delete(new_issue)
+                    db.commit()
+                    for p in saved_paths:
+                        if os.path.exists(p):
+                            os.remove(p)
+                    raise HTTPException(
+                        status_code=400,
+                        detail="AI validation failed: The uploaded image does not appear to contain a valid community issue (e.g. it is a screenshot, QR code, or unrelated image). Please upload a photo of the actual issue."
+                    )
+                
+                # Enrich issue properties if valid
+                new_issue.ai_category = ai_data.get("category")
+                new_issue.ai_confidence = ai_data.get("confidence")
+                new_issue.severity = ai_data.get("severity")
+                new_issue.ai_reasoning = ai_data.get("reasoning")
+                db.commit()
+                db.refresh(new_issue)
+
+        # 3. Send email submission notification to the specified address
+        send_issue_email(
+            to_email="sayantan05092004@gmail.com",
+            title=title,
+            description=description,
+            category=category,
+            severity=severity,
+            latitude=latitude,
+            longitude=longitude,
+            reporter_email=current_user.email,
+            image_paths=saved_paths
+        )
+
+    except HTTPException:
+        # Re-raise HTTPExceptions without double-handling
+        raise
+    except Exception as e:
+        # Cleanup on any other unexpected server errors
+        db.delete(new_issue)
+        db.commit()
+        for p in saved_paths:
+            if os.path.exists(p):
+                os.remove(p)
+        raise HTTPException(status_code=500, detail=f"Server error during report creation: {e}")
+
     return new_issue
+
+@router.post("/analyze")
+def analyze_image_endpoint(
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    upload_dir = "static/uploads/temp"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    file_extension = image.filename.split(".")[-1].lower()
+    temp_filename = f"temp_{uuid.uuid4()}.{file_extension}"
+    file_path = os.path.join(upload_dir, temp_filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+        
+    try:
+        ai_data = analyze_issue_image(file_path)
+        is_valid = ai_data.get("category") != "invalid"
+        
+        category_name = ai_data.get("category", "other")
+        category_mapping = {
+            "pothole": "Pothole",
+            "water_leakage": "Water Leak",
+            "garbage_dump": "Litter",
+            "broken_streetlight": "Streetlight Out",
+            "road_damage": "Pothole",
+            "drainage_issue": "Water Leak",
+            "other": "Other",
+            "invalid": "Other"
+        }
+        mapped_category = category_mapping.get(category_name, "Other")
+        
+        severity_val = ai_data.get("severity", 1.0)
+        if severity_val >= 9.0:
+            severity_str = "Critical"
+        elif severity_val >= 7.0:
+            severity_str = "High"
+        elif severity_val >= 4.0:
+            severity_str = "Medium"
+        else:
+            severity_str = "Low"
+            
+        return {
+            "category": mapped_category,
+            "confidence": ai_data.get("confidence", 0.0),
+            "severity": severity_str,
+            "is_valid": is_valid,
+            "reasoning": ai_data.get("reasoning", "")
+        }
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 @router.get("/", response_model=List[IssueResponse])
 def get_issues(db: Session = Depends(get_db)):
