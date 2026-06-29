@@ -30,19 +30,16 @@ def analyze_issue_image(image_path: str) -> dict:
         base64_image = encode_image_to_base64(image_path)
 
         prompt = """
-        Analyze this image for civic and community issues. You are a strict filter designed to prevent junk submissions.
-        Return a RAW JSON object (no markdown formatting, no backticks).
+        Analyze this image for civic and community issues. Return a RAW JSON object (no markdown formatting, no backticks).
         The JSON must contain exactly these 4 keys:
         - "category": Must be one of ["pothole", "water_leakage", "garbage_dump", "broken_streetlight", "road_damage", "drainage_issue", "other", "invalid"].
         - "confidence": A float between 0.0 and 1.0 representing your confidence.
         - "severity": A float between 0.0 and 10.0 representing the severity.
         - "reasoning": A short sentence explaining your choice.
         
-        DETECTION RULES:
-        1. VALID community issues are: public infrastructure damage, potholes, road cracks, water leaks on streets, flooded streets, overflowing garbage, broken streetlights, exposed public wiring, public property vandalism, blocked drainage.
-        2. INVALID images are: screenshots of software/games/chats, computer code, documents, QR codes, selfies/portraits of people, indoor private household items (like a kitchen sink, private living room, toys), memes, graphics, charts, food, text, animals, or any image not showing an active outdoor/public utility or infrastructure issue.
-        
-        CRITICAL INSTRUCTION: If the image falls under category 2 (INVALID), or does NOT show a clear public infrastructure/civic problem, you MUST set "category" to "invalid", "confidence" to 1.0, and "severity" to 0.0. Be extremely strict. If in doubt, mark as "invalid".
+        CLASSIFICATION RULES:
+        1. Set category to "invalid" ONLY if the image is clearly NOT a community/infrastructure/civic scene. Obvious examples of "invalid" are: selfies, indoor screenshots of games/software/websites, QR codes, document scans, memes, isolated household items (e.g. inside a cup, computer keyboard), isolated pets or food, or graphical charts.
+        2. If the image shows an outdoor public environment, a street, sidewalk, road, public utility, construction site, park, or infrastructure element, it is a VALID issue. Even if it is unclear, if it is outdoor/utility, classify it under a matching category or "other". Do NOT set it to "invalid" if it shows a real outdoor or public utility scene.
         """
 
         response = client.chat.completions.create(

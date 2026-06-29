@@ -113,10 +113,9 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         final predCategory = prediction['category'] as String?;
         final predSeverity = prediction['severity'] as String?;
         final isValid = prediction['is_valid'] ?? true;
-        final confidence = prediction['confidence'] ?? 1.0;
 
-        // Strict checks
-        if (isValid == false || (predCategory == 'Other' && confidence < 0.3) || predCategory == 'Invalid') {
+        // Simplified validity check: trust AI's invalid flag
+        if (isValid == false || predCategory == 'Invalid') {
           _validity[file.path] = false;
         } else {
           _validity[file.path] = true;
