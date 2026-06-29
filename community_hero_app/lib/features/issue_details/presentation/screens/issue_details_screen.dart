@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../../widgets/bounce_button.dart';
 import '../providers/issue_details_controller.dart';
 import '../../../../models/issue.dart';
 
@@ -170,30 +171,45 @@ class IssueDetailsScreen extends ConsumerWidget {
                       const SizedBox(height: 32),
 
                       // Verify Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton.icon(
-                          onPressed: state.isVerifying
-                              ? null
-                              : () async {
-                                  final errorMsg = await ref.read(issueDetailsProvider(issueId).notifier).verifyIssue();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(errorMsg == null ? 'Issue verified successfully!' : errorMsg),
-                                        backgroundColor: errorMsg == null ? Colors.green : Colors.red,
-                                      ),
-                                    );
-                                  }
-                                },
-                          icon: state.isVerifying
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : const Icon(Icons.verified_user),
-                          label: const Text('I am here! Verify Issue'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
+                      BounceButton(
+                        onTap: state.isVerifying
+                            ? null
+                            : () async {
+                                final errorMsg = await ref.read(issueDetailsProvider(issueId).notifier).verifyIssue();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(errorMsg == null ? 'Issue verified successfully!' : errorMsg),
+                                      backgroundColor: errorMsg == null ? Colors.green : Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton.icon(
+                            onPressed: state.isVerifying
+                                ? null
+                                : () async {
+                                    final errorMsg = await ref.read(issueDetailsProvider(issueId).notifier).verifyIssue();
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(errorMsg == null ? 'Issue verified successfully!' : errorMsg),
+                                          backgroundColor: errorMsg == null ? Colors.green : Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  },
+                            icon: state.isVerifying
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                : const Icon(Icons.verified_user),
+                            label: const Text('I am here! Verify Issue'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
                           ),
                         ),
                       ),

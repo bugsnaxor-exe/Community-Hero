@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../widgets/bounce_button.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/report_controller.dart';
 
@@ -354,89 +355,19 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                             final isAnalyzingImg = _analyzing[image.path] ?? false;
                             final isImgValid = _validity[image.path] ?? true;
 
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    width: 180,
-                                    height: 200,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: !isImgValid ? Colors.red : Colors.transparent,
-                                        width: 3,
-                                      ),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Stack(
-                                        fit: StackFit.expand,
-                                        children: [
-                                          kIsWeb
-                                              ? Image.network(image.path, fit: BoxFit.cover)
-                                              : FutureBuilder<Uint8List>(
-                                                  future: image.readAsBytes(),
-                                                  builder: (context, snapshot) {
-                                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                                      return const Center(child: CircularProgressIndicator());
-                                                    }
-                                                    if (snapshot.hasData) {
-                                                      return Image.memory(snapshot.data!, fit: BoxFit.cover);
-                                                    }
-                                                    return const Center(child: Icon(Icons.error));
-                                                  },
-                                                ),
-                                          if (isAnalyzingImg)
-                                            Container(
-                                              color: Colors.black.withOpacity(0.5),
-                                              child: const Center(
-                                                child: CircularProgressIndicator(color: Colors.white),
-                                              ),
-                                            ),
-                                          if (!isImgValid)
-                                            Container(
-                                              color: Colors.red.withOpacity(0.4),
-                                              child: const Center(
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Icon(Icons.warning, color: Colors.white, size: 36),
-                                                    SizedBox(height: 4),
-                                                    Text(
-                                                      'INVALID IMAGE',
-                                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _images.removeAt(index);
-                                          _analyzing.remove(image.path);
-                                          _predictions.remove(image.path);
-                                          _validity.remove(image.path);
-                                        });
-                                      },
-                                      child: CircleAvatar(
-                                        radius: 14,
-                                        backgroundColor: Colors.black.withOpacity(0.7),
-                                        child: const Icon(Icons.close, size: 16, color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            return _AnimatedImageItem(
+                              key: ValueKey(image.path),
+                              image: image,
+                              isAnalyzing: isAnalyzingImg,
+                              isValid: isImgValid,
+                              onDelete: () {
+                                setState(() {
+                                  _images.removeAt(index);
+                                  _analyzing.remove(image.path);
+                                  _predictions.remove(image.path);
+                                  _validity.remove(image.path);
+                                });
+                              },
                             );
                           },
                         ),
@@ -481,20 +412,168 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                   const SizedBox(height: 32),
                   
                   // Submit Button
-                  SizedBox(
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: isLoading || _analyzing.values.any((status) => status == true) ? null : _submit,
-                      icon: isLoading 
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Icon(Icons.send),
-                      label: Text(isLoading ? 'Submitting & Locating...' : 'Submit Report'),
+                  BounceButton(
+                    onTap: isLoading || _analyzing.values.any((status) => status == true) ? null : _submit,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: isLoading || _analyzing.values.any((status) => status == true) ? null : _submit,
+                        icon: isLoading 
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : const Icon(Icons.send),
+                        label: Text(isLoading ? 'Submitting & Locating...' : 'Submit Report'),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedImageItem extends StatefulWidget {
+  final XFile image;
+  final bool isAnalyzing;
+  final bool isValid;
+  final VoidCallback onDelete;
+
+  const _AnimatedImageItem({
+    super.key,
+    required this.image,
+    required this.isAnalyzing,
+    required this.isValid,
+    required this.onDelete,
+  });
+
+  @override
+  State<_AnimatedImageItem> createState() => _AnimatedImageItemState();
+}
+
+class _AnimatedImageItemState extends State<_AnimatedImageItem> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleDelete() {
+    _controller.forward().then((_) {
+      widget.onDelete();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _opacityAnimation.value,
+          child: Transform.scale(
+            scale: _scaleAnimation.value,
+            child: child,
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Stack(
+          children: [
+            Container(
+              width: 180,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: !widget.isValid ? Colors.red : Colors.transparent,
+                  width: 3,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    kIsWeb
+                        ? Image.network(widget.image.path, fit: BoxFit.cover)
+                        : FutureBuilder<Uint8List>(
+                            future: widget.image.readAsBytes(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              if (snapshot.hasData) {
+                                return Image.memory(snapshot.data!, fit: BoxFit.cover);
+                              }
+                              return const Center(child: Icon(Icons.error));
+                            },
+                          ),
+                    if (widget.isAnalyzing)
+                      Container(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        child: const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
+                      ),
+                    if (!widget.isValid)
+                      Container(
+                        color: Colors.red.withValues(alpha: 0.4),
+                        child: const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.warning, color: Colors.white, size: 36),
+                              SizedBox(height: 4),
+                              Text(
+                                'INVALID IMAGE',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: _handleDelete,
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: Colors.black.withValues(alpha: 0.7),
+                  child: const Icon(Icons.close, size: 16, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

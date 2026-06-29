@@ -19,6 +19,8 @@ class ResolutionRateChart extends StatelessWidget {
         SizedBox(
           height: 200,
           child: BarChart(
+            swapAnimationDuration: const Duration(milliseconds: 600),
+            swapAnimationCurve: Curves.easeOutCubic,
             BarChartData(
               alignment: BarChartAlignment.spaceAround,
               maxY: (resolved + pending + verified).toDouble() + 5,

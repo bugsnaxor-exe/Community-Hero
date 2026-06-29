@@ -50,6 +50,29 @@ final shellNavigatorReportKey = GlobalKey<NavigatorState>(debugLabel: 'reportShe
 final shellNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'dashboardShell');
 final shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'profileShell');
 
+Page<dynamic> _buildPageWithTransition(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.0, 0.04), // Subtle slide up
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          )),
+          child: child,
+        ),
+      );
+    },
+    transitionDuration: const Duration(milliseconds: 300),
+  );
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
 
@@ -100,7 +123,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/dashboard',
-                builder: (context, state) => const DashboardScreen(),
+                pageBuilder: (context, state) => _buildPageWithTransition(state, const DashboardScreen()),
               ),
             ],
           ),
@@ -110,7 +133,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/map',
-                builder: (context, state) => const MapScreen(),
+                pageBuilder: (context, state) => _buildPageWithTransition(state, const MapScreen()),
               ),
             ],
           ),
@@ -120,7 +143,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/report',
-                builder: (context, state) => const ReportScreen(),
+                pageBuilder: (context, state) => _buildPageWithTransition(state, const ReportScreen()),
               ),
             ],
           ),
@@ -130,7 +153,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/home',
-                builder: (context, state) => const HomeScreen(),
+                pageBuilder: (context, state) => _buildPageWithTransition(state, const HomeScreen()),
               ),
             ],
           ),
@@ -140,7 +163,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/profile',
-                builder: (context, state) => const ProfileScreen(),
+                pageBuilder: (context, state) => _buildPageWithTransition(state, const ProfileScreen()),
               ),
             ],
           ),
