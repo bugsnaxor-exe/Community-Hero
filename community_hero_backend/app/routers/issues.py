@@ -115,7 +115,7 @@ def create_issue(
             ai_data = analyze_issue_image(saved_paths[0])
             if ai_data:
                 # 2. Reject if the AI determines the image does not represent a valid community issue
-                if ai_data.get("category") == "invalid":
+                if str(ai_data.get("category", "")).strip().lower() == "invalid":
                     # Clean up DB records and files
                     db.delete(new_issue)
                     db.commit()
@@ -180,9 +180,9 @@ def analyze_image_endpoint(
         
     try:
         ai_data = analyze_issue_image(file_path)
-        is_valid = ai_data.get("category") != "invalid"
+        category_name = str(ai_data.get("category", "other")).strip().lower()
+        is_valid = category_name != "invalid"
         
-        category_name = ai_data.get("category", "other")
         category_mapping = {
             "pothole": "Pothole",
             "water_leakage": "Water Leak",

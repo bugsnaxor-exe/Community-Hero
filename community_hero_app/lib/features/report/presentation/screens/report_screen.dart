@@ -271,11 +271,14 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               // Photo Upload Section
               Text(
                 'Upload Photos (Max 6)',
@@ -479,6 +482,8 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
               ),
             ),
           ),
-        );
+        ),
+      ),
+    );
   }
 }
