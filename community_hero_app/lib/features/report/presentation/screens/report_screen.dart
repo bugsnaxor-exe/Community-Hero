@@ -202,6 +202,19 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     }
     
     if (hasInvalid) {
+      String reason = 'Invalid image detected. Please remove screenshots, selfies, QR codes, or private indoor photos using the cross (X) button on the image(s).';
+      for (var entry in _predictions.entries) {
+        final path = entry.key;
+        final pred = entry.value;
+        if (pred != null && _validity[path] == false) {
+          final predReason = pred['reasoning'] as String?;
+          if (predReason != null && predReason.isNotEmpty) {
+            reason = 'AI Check: $predReason Please remove this image using the cross (X) button.';
+            break;
+          }
+        }
+      }
+
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -209,14 +222,14 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.error_outline, color: Colors.red),
-            SizedBox(width: 12),
+            const Icon(Icons.error_outline, color: Colors.red),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Invalid image detected. Please remove screenshots, selfies, QR codes, or private indoor photos using the cross (X) button on the image(s).',
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                reason,
+                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
               ),
             ),
           ],

@@ -38,8 +38,10 @@ def analyze_issue_image(image_path: str) -> dict:
         - "reasoning": A short sentence explaining your choice.
         
         CLASSIFICATION RULES:
-        1. Set category to "invalid" ONLY if the image is clearly NOT a community/infrastructure/civic scene. Obvious examples of "invalid" are: selfies, indoor screenshots of games/software/websites, QR codes, document scans, memes, isolated household items (e.g. inside a cup, computer keyboard), isolated pets or food, or graphical charts.
+        1. Set category to "invalid" ONLY if the image is clearly NOT a community/infrastructure/civic scene. Obvious examples of "invalid" are: selfies/portraits of people, indoor screenshots of games/software/chats/websites, QR codes, document scans, memes, isolated household items (e.g. inside a cup, computer keyboard), isolated pets or food, or graphical charts.
         2. If the image shows an outdoor public environment, a street, sidewalk, road, public utility, construction site, park, or infrastructure element, it is a VALID issue. Even if it is unclear, if it is outdoor/utility, classify it under a matching category or "other". Do NOT set it to "invalid" if it shows a real outdoor or public utility scene.
+        3. Close-up photos of potholes, road cracks, broken pavement, garbage piles, or utility pipes are VALID community issues. Do NOT mark close-up photos of infrastructure damage as invalid just because the surrounding street or background is not visible.
+        4. If the image contains a street, road, sidewalk, pavement, pothole, street light, or outdoor garbage, it is 100% VALID. You must classify it under 'pothole', 'road_damage', 'garbage_dump', or 'other'. It is CRITICAL that you never classify these as 'invalid'.
         """
 
         response = client.chat.completions.create(
