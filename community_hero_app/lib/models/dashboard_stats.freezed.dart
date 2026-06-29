@@ -28,6 +28,8 @@ mixin _$DashboardStats {
   int get resolvedIssues => throw _privateConstructorUsedError;
   @JsonKey(name: 'pending_issues')
   int get pendingIssues => throw _privateConstructorUsedError;
+  @JsonKey(name: 'total_volunteers')
+  int get totalVolunteers => throw _privateConstructorUsedError;
 
   /// Serializes this DashboardStats to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,7 +51,8 @@ abstract class $DashboardStatsCopyWith<$Res> {
       {@JsonKey(name: 'total_issues') int totalIssues,
       @JsonKey(name: 'verified_issues') int verifiedIssues,
       @JsonKey(name: 'resolved_issues') int resolvedIssues,
-      @JsonKey(name: 'pending_issues') int pendingIssues});
+      @JsonKey(name: 'pending_issues') int pendingIssues,
+      @JsonKey(name: 'total_volunteers') int totalVolunteers});
 }
 
 /// @nodoc
@@ -71,6 +74,7 @@ class _$DashboardStatsCopyWithImpl<$Res, $Val extends DashboardStats>
     Object? verifiedIssues = null,
     Object? resolvedIssues = null,
     Object? pendingIssues = null,
+    Object? totalVolunteers = null,
   }) {
     return _then(_value.copyWith(
       totalIssues: null == totalIssues
@@ -89,6 +93,10 @@ class _$DashboardStatsCopyWithImpl<$Res, $Val extends DashboardStats>
           ? _value.pendingIssues
           : pendingIssues // ignore: cast_nullable_to_non_nullable
               as int,
+      totalVolunteers: null == totalVolunteers
+          ? _value.totalVolunteers
+          : totalVolunteers // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -105,7 +113,8 @@ abstract class _$$DashboardStatsImplCopyWith<$Res>
       {@JsonKey(name: 'total_issues') int totalIssues,
       @JsonKey(name: 'verified_issues') int verifiedIssues,
       @JsonKey(name: 'resolved_issues') int resolvedIssues,
-      @JsonKey(name: 'pending_issues') int pendingIssues});
+      @JsonKey(name: 'pending_issues') int pendingIssues,
+      @JsonKey(name: 'total_volunteers') int totalVolunteers});
 }
 
 /// @nodoc
@@ -125,6 +134,7 @@ class __$$DashboardStatsImplCopyWithImpl<$Res>
     Object? verifiedIssues = null,
     Object? resolvedIssues = null,
     Object? pendingIssues = null,
+    Object? totalVolunteers = null,
   }) {
     return _then(_$DashboardStatsImpl(
       totalIssues: null == totalIssues
@@ -143,6 +153,10 @@ class __$$DashboardStatsImplCopyWithImpl<$Res>
           ? _value.pendingIssues
           : pendingIssues // ignore: cast_nullable_to_non_nullable
               as int,
+      totalVolunteers: null == totalVolunteers
+          ? _value.totalVolunteers
+          : totalVolunteers // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -154,7 +168,8 @@ class _$DashboardStatsImpl implements _DashboardStats {
       {@JsonKey(name: 'total_issues') this.totalIssues = 0,
       @JsonKey(name: 'verified_issues') this.verifiedIssues = 0,
       @JsonKey(name: 'resolved_issues') this.resolvedIssues = 0,
-      @JsonKey(name: 'pending_issues') this.pendingIssues = 0});
+      @JsonKey(name: 'pending_issues') this.pendingIssues = 0,
+      @JsonKey(name: 'total_volunteers') this.totalVolunteers = 0});
 
   factory _$DashboardStatsImpl.fromJson(Map<String, dynamic> json) =>
       _$$DashboardStatsImplFromJson(json);
@@ -171,10 +186,13 @@ class _$DashboardStatsImpl implements _DashboardStats {
   @override
   @JsonKey(name: 'pending_issues')
   final int pendingIssues;
+  @override
+  @JsonKey(name: 'total_volunteers')
+  final int totalVolunteers;
 
   @override
   String toString() {
-    return 'DashboardStats(totalIssues: $totalIssues, verifiedIssues: $verifiedIssues, resolvedIssues: $resolvedIssues, pendingIssues: $pendingIssues)';
+    return 'DashboardStats(totalIssues: $totalIssues, verifiedIssues: $verifiedIssues, resolvedIssues: $resolvedIssues, pendingIssues: $pendingIssues, totalVolunteers: $totalVolunteers)';
   }
 
   @override
@@ -189,13 +207,15 @@ class _$DashboardStatsImpl implements _DashboardStats {
             (identical(other.resolvedIssues, resolvedIssues) ||
                 other.resolvedIssues == resolvedIssues) &&
             (identical(other.pendingIssues, pendingIssues) ||
-                other.pendingIssues == pendingIssues));
+                other.pendingIssues == pendingIssues) &&
+            (identical(other.totalVolunteers, totalVolunteers) ||
+                other.totalVolunteers == totalVolunteers));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, totalIssues, verifiedIssues, resolvedIssues, pendingIssues);
+  int get hashCode => Object.hash(runtimeType, totalIssues, verifiedIssues,
+      resolvedIssues, pendingIssues, totalVolunteers);
 
   /// Create a copy of DashboardStats
   /// with the given fields replaced by the non-null parameter values.
@@ -219,7 +239,8 @@ abstract class _DashboardStats implements DashboardStats {
           {@JsonKey(name: 'total_issues') final int totalIssues,
           @JsonKey(name: 'verified_issues') final int verifiedIssues,
           @JsonKey(name: 'resolved_issues') final int resolvedIssues,
-          @JsonKey(name: 'pending_issues') final int pendingIssues}) =
+          @JsonKey(name: 'pending_issues') final int pendingIssues,
+          @JsonKey(name: 'total_volunteers') final int totalVolunteers}) =
       _$DashboardStatsImpl;
 
   factory _DashboardStats.fromJson(Map<String, dynamic> json) =
@@ -237,6 +258,9 @@ abstract class _DashboardStats implements DashboardStats {
   @override
   @JsonKey(name: 'pending_issues')
   int get pendingIssues;
+  @override
+  @JsonKey(name: 'total_volunteers')
+  int get totalVolunteers;
 
   /// Create a copy of DashboardStats
   /// with the given fields replaced by the non-null parameter values.

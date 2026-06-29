@@ -30,14 +30,19 @@ def analyze_issue_image(image_path: str) -> dict:
         base64_image = encode_image_to_base64(image_path)
 
         prompt = """
-        Analyze this image for community issues. Return a RAW JSON object (no markdown formatting, no backticks).
+        Analyze this image for civic and community issues. You are a strict filter designed to prevent junk submissions.
+        Return a RAW JSON object (no markdown formatting, no backticks).
         The JSON must contain exactly these 4 keys:
         - "category": Must be one of ["pothole", "water_leakage", "garbage_dump", "broken_streetlight", "road_damage", "drainage_issue", "other", "invalid"].
-        - "confidence": A float between 0.0 and 1.0 representing your confidence in the category.
-        - "severity": A float between 0.0 and 10.0 representing the physical severity or danger of the issue.
-        - "reasoning": A short sentence explaining why you chose this category and severity.
+        - "confidence": A float between 0.0 and 1.0 representing your confidence.
+        - "severity": A float between 0.0 and 10.0 representing the severity.
+        - "reasoning": A short sentence explaining your choice.
         
-        CRITICAL: If the image is clearly NOT a community issue (e.g., a selfie, a screenshot of a game like Clash of Clans, a random object, a QR code, or any image completely unrelated to infrastructure or community problems), you MUST set "category" to "invalid", "confidence" to 1.0, and "severity" to 0.0. Do not attempt to classify random images into valid categories.
+        DETECTION RULES:
+        1. VALID community issues are: public infrastructure damage, potholes, road cracks, water leaks on streets, flooded streets, overflowing garbage, broken streetlights, exposed public wiring, public property vandalism, blocked drainage.
+        2. INVALID images are: screenshots of software/games/chats, computer code, documents, QR codes, selfies/portraits of people, indoor private household items (like a kitchen sink, private living room, toys), memes, graphics, charts, food, text, animals, or any image not showing an active outdoor/public utility or infrastructure issue.
+        
+        CRITICAL INSTRUCTION: If the image falls under category 2 (INVALID), or does NOT show a clear public infrastructure/civic problem, you MUST set "category" to "invalid", "confidence" to 1.0, and "severity" to 0.0. Be extremely strict. If in doubt, mark as "invalid".
         """
 
         response = client.chat.completions.create(

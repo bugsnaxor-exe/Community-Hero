@@ -20,12 +20,11 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   
   String _selectedCategory = 'Pothole';
   String _selectedSeverity = 'Medium';
-  List<XFile> _images = [];
-  bool _isImageValid = true;
+  final List<XFile> _images = [];
+  final Map<String, Map<String, dynamic>?> _predictions = {}; // Key: XFile.path
+  final Map<String, bool> _analyzing = {}; // Key: XFile.path
+  final Map<String, bool> _validity = {}; // Key: XFile.path
   
-  bool _isAnalyzing = false;
-  Map<String, dynamic>? _aiPrediction;
-
   final List<String> _categories = ['Pothole', 'Streetlight Out', 'Graffiti', 'Litter', 'Water Leak', 'Other'];
   final List<String> _severities = ['Low', 'Medium', 'High', 'Critical'];
 
@@ -34,6 +33,34 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _showImageSourceBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a Photo'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickImages(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickImages(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _pickImages(ImageSource source) async {
@@ -61,56 +88,81 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
 
       setState(() {
         _images.addAll(pickedFiles);
-        _isAnalyzing = true;
-        _aiPrediction = null; 
+        for (var file in pickedFiles) {
+          _analyzing[file.path] = true;
+          _validity[file.path] = true; // Assume valid initially
+        }
       });
-      
-      // Perform AI Analysis on the first new image
-      final prediction = await ref.read(reportControllerProvider.notifier).analyzeImage(pickedFiles.first);
-      
-      if (mounted) {
-        setState(() {
-          _isAnalyzing = false;
-          _aiPrediction = prediction;
-          
-          if (prediction != null) {
-            final predCategory = prediction['category'] as String?;
-            final predSeverity = prediction['severity'] as String?;
-            final isValid = prediction['is_valid'] ?? true;
-            final confidence = prediction['confidence'] ?? 1.0;
-            
-            // Extremely specific check as requested: only block if explicitly invalid or very low confidence on non-standard category
-            if (isValid == false || (predCategory == 'Other' && confidence < 0.3)) {
-              _isImageValid = false;
-            } else {
-              _isImageValid = true;
-            }
-            
-            if (predCategory != null && _categories.contains(predCategory)) {
-              _selectedCategory = predCategory;
-            }
-            if (predSeverity != null && _severities.contains(predSeverity)) {
-              _selectedSeverity = predSeverity;
-            }
-          }
-        });
+
+      // Analyze each picked image asynchronously
+      for (var file in pickedFiles) {
+        _analyzeSingleImage(file);
       }
     }
   }
 
+  Future<void> _analyzeSingleImage(XFile file) async {
+    final prediction = await ref.read(reportControllerProvider.notifier).analyzeImage(file);
+    if (!mounted) return;
+
+    setState(() {
+      _analyzing[file.path] = false;
+      _predictions[file.path] = prediction;
+
+      if (prediction != null) {
+        final predCategory = prediction['category'] as String?;
+        final predSeverity = prediction['severity'] as String?;
+        final isValid = prediction['is_valid'] ?? true;
+        final confidence = prediction['confidence'] ?? 1.0;
+
+        // Strict checks
+        if (isValid == false || (predCategory == 'Other' && confidence < 0.3) || predCategory == 'Invalid') {
+          _validity[file.path] = false;
+        } else {
+          _validity[file.path] = true;
+
+          // Auto-fill category and severity based on the first valid prediction
+          if (_selectedCategory == 'Other' || _selectedCategory == 'Pothole') {
+            if (predCategory != null && _categories.contains(predCategory)) {
+              _selectedCategory = predCategory;
+            }
+          }
+          if (predSeverity != null && _severities.contains(predSeverity)) {
+            _selectedSeverity = predSeverity;
+          }
+        }
+      } else {
+        // If analysis fails, treat as valid to avoid blocking user
+        _validity[file.path] = true;
+      }
+    });
+  }
+
   void _submit() async {
-    if (!_isImageValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid image detected. Please upload a real issue.'), backgroundColor: Colors.red),
-      );
-      return;
-    }
     if (_images.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please upload at least one image.'), backgroundColor: Colors.orange),
       );
       return;
     }
+
+    if (_analyzing.values.any((status) => status == true)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please wait until image analysis is complete.'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    if (_validity.values.any((status) => status == false)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('One or more uploaded images are invalid or not related to community issues. Please remove them.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
       final success = await ref.read(reportControllerProvider.notifier).submitReport(
             title: _titleController.text.trim(),
@@ -130,7 +182,10 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   }
 
   Widget _buildAiPredictionWidget() {
-    if (_isAnalyzing) {
+    final isAnalyzing = _analyzing.values.any((status) => status == true);
+    final hasInvalid = _validity.values.any((status) => status == false);
+
+    if (isAnalyzing) {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -141,14 +196,39 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
           children: [
             SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
             SizedBox(width: 16),
-            Expanded(child: Text('AI is analyzing the image...', style: TextStyle(color: Colors.blue))),
+            Expanded(child: Text('AI is analyzing the uploaded image(s)...', style: TextStyle(color: Colors.blue))),
           ],
         ),
       );
     }
     
-    if (_aiPrediction != null) {
-      final confidence = ((_aiPrediction!['confidence'] ?? 0.0) * 100).toInt();
+    if (hasInvalid) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Invalid image detected. Please remove screenshots, selfies, QR codes, or private indoor photos using the cross (X) button on the image(s).',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final validPredictions = _predictions.values.where((p) => p != null && p['is_valid'] == true).toList();
+    if (validPredictions.isNotEmpty) {
+      final firstPred = validPredictions.first!;
+      final confidence = ((firstPred['confidence'] ?? 0.0) * 100).toInt();
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -165,7 +245,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('AI Prediction Applied', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
-                  Text('Category: ${_aiPrediction!['category']} | Severity: ${_aiPrediction!['severity']} ($confidence% confidence)'),
+                  Text('Category: ${firstPred['category']} | Severity: ${firstPred['severity']} ($confidence% confidence)'),
                 ],
               ),
             ),
@@ -182,137 +262,175 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     final reportState = ref.watch(reportControllerProvider);
     final isLoading = reportState.isLoading;
 
-    ref.listen<AsyncValue<void>>(
-      reportControllerProvider,
-      (_, state) {
-        if (!state.isLoading && state.hasError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.error.toString()),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      },
-    );
-
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Report an Issue'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text('Report Issue', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Image Picker Section
-                  GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        builder: (ctx) => SafeArea(
-                          child: Wrap(
-                            children: [
-                              ListTile(
-                                leading: const Icon(Icons.camera_alt),
-                                title: const Text('Take a Photo'),
-                                onTap: () {
-                                  Navigator.pop(ctx);
-                                  _pickImages(ImageSource.camera);
-                                },
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.photo_library),
-                                title: const Text('Choose from Gallery'),
-                                onTap: () {
-                                  Navigator.pop(ctx);
-                                  _pickImages(ImageSource.gallery);
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
-                      ),
-                      child: _images.isEmpty
-                          ? const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_a_photo, size: 48, color: Colors.grey),
-                                SizedBox(height: 8),
-                                Text('Tap to add photos', style: TextStyle(color: Colors.grey)),
-                              ],
-                            )
-                          : ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _images.length < 6 ? _images.length + 1 : _images.length,
-                              itemBuilder: (context, index) {
-                                if (index == _images.length) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      width: 180,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade300,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                                            SizedBox(height: 8),
-                                            Text('Add more', style: TextStyle(color: Colors.grey)),
-                                          ],
-                                        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Photo Upload Section
+              Text(
+                'Upload Photos (Max 6)',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () {
+                  if (_images.isEmpty) {
+                    _showImageSourceBottomSheet();
+                  }
+                },
+                child: Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
+                  ),
+                  child: _images.isEmpty
+                      ? const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_a_photo, size: 48, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text('Tap to add photos', style: TextStyle(color: Colors.grey)),
+                          ],
+                        )
+                      : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _images.length < 6 ? _images.length + 1 : _images.length,
+                          itemBuilder: (context, index) {
+                            if (index == _images.length) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: InkWell(
+                                  onTap: () => _showImageSourceBottomSheet(),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    width: 180,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade300,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+                                          SizedBox(height: 8),
+                                          Text('Add more', style: TextStyle(color: Colors.grey)),
+                                        ],
                                       ),
                                     ),
-                                  );
-                                }
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: kIsWeb
-                                        ? Image.network(_images[index].path, fit: BoxFit.cover, width: 180)
-                                        : FutureBuilder<Uint8List>(
-                                            future: _images[index].readAsBytes(),
-                                            builder: (context, snapshot) {
-                                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                                return const SizedBox(
-                                                  width: 180,
-                                                  child: Center(child: CircularProgressIndicator()),
-                                                );
-                                              }
-                                              if (snapshot.hasData) {
-                                                return Image.memory(snapshot.data!, fit: BoxFit.cover, width: 180);
-                                              }
-                                              return const SizedBox(width: 180, child: Icon(Icons.error));
-                                            },
-                                          ),
                                   ),
-                                );
-                              },
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // AI Prediction Display
-                  _buildAiPredictionWidget(),
-                  if (_isAnalyzing || _aiPrediction != null) const SizedBox(height: 16),
+                                ),
+                              );
+                            }
+                            final image = _images[index];
+                            final isAnalyzingImg = _analyzing[image.path] ?? false;
+                            final isImgValid = _validity[image.path] ?? true;
+
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: 180,
+                                    height: 200,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: !isImgValid ? Colors.red : Colors.transparent,
+                                        width: 3,
+                                      ),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          kIsWeb
+                                              ? Image.network(image.path, fit: BoxFit.cover)
+                                              : FutureBuilder<Uint8List>(
+                                                  future: image.readAsBytes(),
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                                      return const Center(child: CircularProgressIndicator());
+                                                    }
+                                                    if (snapshot.hasData) {
+                                                      return Image.memory(snapshot.data!, fit: BoxFit.cover);
+                                                    }
+                                                    return const Center(child: Icon(Icons.error));
+                                                  },
+                                                ),
+                                          if (isAnalyzingImg)
+                                            Container(
+                                              color: Colors.black.withOpacity(0.5),
+                                              child: const Center(
+                                                child: CircularProgressIndicator(color: Colors.white),
+                                              ),
+                                            ),
+                                          if (!isImgValid)
+                                            Container(
+                                              color: Colors.red.withOpacity(0.4),
+                                              child: const Center(
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(Icons.warning, color: Colors.white, size: 36),
+                                                    SizedBox(height: 4),
+                                                    Text(
+                                                      'INVALID IMAGE',
+                                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _images.removeAt(index);
+                                          _analyzing.remove(image.path);
+                                          _predictions.remove(image.path);
+                                          _validity.remove(image.path);
+                                        });
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 14,
+                                        backgroundColor: Colors.black.withOpacity(0.7),
+                                        child: const Icon(Icons.close, size: 16, color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // AI Prediction Display
+              _buildAiPredictionWidget(),
+              if (_analyzing.isNotEmpty) const SizedBox(height: 16),
                   
                   // Text Inputs
                   TextFormField(
@@ -350,7 +468,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                   SizedBox(
                     height: 50,
                     child: ElevatedButton.icon(
-                      onPressed: isLoading || _isAnalyzing ? null : _submit,
+                      onPressed: isLoading || _analyzing.values.any((status) => status == true) ? null : _submit,
                       icon: isLoading 
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                           : const Icon(Icons.send),
@@ -361,8 +479,6 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 }
