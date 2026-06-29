@@ -23,13 +23,24 @@ final nearbyIssuesProvider = FutureProvider<List<Issue>>((ref) async {
   final dio = ref.watch(dioProvider);
   final locationService = ref.watch(locationServiceProvider);
   
-  // 1. Get the current device GPS location
-  final position = await locationService.getCurrentLocation();
+  double latitude;
+  double longitude;
   
-  // 2. Fetch issues around this location within a 5km radius
+  try {
+    // 1. Try to get the current device GPS location
+    final position = await locationService.getCurrentLocation();
+    latitude = position.latitude;
+    longitude = position.longitude;
+  } catch (e) {
+    // 2. Fallback to default coordinates if GPS fails (Kolkata, India)
+    latitude = 22.5726;
+    longitude = 88.3639;
+  }
+  
+  // 3. Fetch issues around this location within a 5km radius
   final response = await dio.get('/issues/nearby', queryParameters: {
-    'lat': position.latitude,
-    'lng': position.longitude,
+    'lat': latitude,
+    'lng': longitude,
     'radius': 5, // 5 km
   });
   

@@ -28,16 +28,26 @@ class ReportController extends AsyncNotifier<void> {
   }) async {
     state = const AsyncValue.loading();
     try {
-      // Automatically fetch the user's current GPS location
-      final position = await _locationService.getCurrentLocation();
+      double latitude;
+      double longitude;
+      try {
+        // Automatically fetch the user's current GPS location
+        final position = await _locationService.getCurrentLocation();
+        latitude = position.latitude;
+        longitude = position.longitude;
+      } catch (e) {
+        // Fallback to default coordinates if GPS fails
+        latitude = 22.5726;
+        longitude = 88.3639;
+      }
 
       await _reportRepository.submitReport(
         title: title,
         description: description,
         category: category,
         severity: severity,
-        latitude: position.latitude,
-        longitude: position.longitude,
+        latitude: latitude,
+        longitude: longitude,
         images: images,
       );
 

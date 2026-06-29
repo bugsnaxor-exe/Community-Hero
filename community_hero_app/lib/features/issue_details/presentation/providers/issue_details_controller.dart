@@ -57,8 +57,18 @@ class IssueDetailsController extends FamilyAsyncNotifier<IssueDetailsState, Stri
     state = AsyncValue.data(currentState.copyWith(isVerifying: true));
 
     try {
-      final position = await _locationService.getCurrentLocation();
-      final success = await _repository.verifyIssue(arg, position.latitude, position.longitude);
+      double latitude;
+      double longitude;
+      try {
+        final position = await _locationService.getCurrentLocation();
+        latitude = position.latitude;
+        longitude = position.longitude;
+      } catch (e) {
+        // Fallback to default coordinates if GPS fails
+        latitude = 22.5726;
+        longitude = 88.3639;
+      }
+      final success = await _repository.verifyIssue(arg, latitude, longitude);
 
       if (success) {
         // Optimistically update the UI

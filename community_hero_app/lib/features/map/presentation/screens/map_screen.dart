@@ -42,9 +42,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _initialPosition = LatLng(position.latitude, position.longitude);
       });
     } catch (e) {
-      // Fallback to a default location
+      // Fallback to a default location (Kolkata, India)
       setState(() {
-        _initialPosition = const LatLng(37.7749, -122.4194); // San Francisco
+        _initialPosition = const LatLng(22.5726, 88.3639);
       });
     }
   }
