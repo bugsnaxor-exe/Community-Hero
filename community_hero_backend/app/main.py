@@ -114,6 +114,18 @@ def test_smtp_endpoint():
                     "response_text": response_text,
                     "details": status_info
                 }
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode("utf-8")
+            except Exception:
+                error_body = "Could not read error body"
+            return {
+                "status": "failed",
+                "method": "Resend HTTP API",
+                "error": f"HTTP Error {e.code}: {e.reason}",
+                "body": error_body,
+                "details": status_info
+            }
         except Exception as e:
             return {
                 "status": "failed",
