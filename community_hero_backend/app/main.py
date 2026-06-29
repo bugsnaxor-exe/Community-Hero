@@ -55,6 +55,7 @@ app.include_router(notifications.router, prefix="/api/notifications", tags=["not
 @app.get("/api/test-smtp")
 def test_smtp_endpoint():
     import smtplib
+    import requests
     from email.mime.text import MIMEText
     from app.core.config import settings
     
@@ -62,16 +63,62 @@ def test_smtp_endpoint():
     smtp_port = getattr(settings, "SMTP_PORT", 587)
     smtp_user = getattr(settings, "SMTP_USER", "")
     smtp_password = getattr(settings, "SMTP_PASSWORD", "")
+    resend_api_key = getattr(settings, "RESEND_API_KEY", "")
     
     status_info = {
         "smtp_host": smtp_host,
         "smtp_port": smtp_port,
         "smtp_user": smtp_user,
-        "password_configured": bool(smtp_password)
+        "smtp_password_configured": bool(smtp_password),
+        "resend_key_configured": bool(resend_api_key),
+        "resend_key_preview": f"{resend_api_key[:5]}...{resend_api_key[-3:]}" if resend_api_key else None
     }
     
+    # 1. Try Resend if configured
+    if resend_api_key:
+        try:
+            payload = {
+                "from": "Community Hero <onboarding@resend.dev>",
+                "to": ["sayantan05092004@gmail.com"],
+                "subject": "[Community Hero] Live Render Resend Diagnostic",
+                "text": "This is a live diagnostic email sent from the Render server using the Resend HTTP API fallback."
+            }
+            res = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json=payload,
+                timeout=10
+            )
+            if res.status_code in [200, 201]:
+                return {
+                    "status": "success",
+                    "method": "Resend HTTP API",
+                    "response_code": res.status_code,
+                    "response_text": res.text,
+                    "details": status_info
+                }
+            else:
+                return {
+                    "status": "failed",
+                    "method": "Resend HTTP API",
+                    "response_code": res.status_code,
+                    "response_text": res.text,
+                    "details": status_info
+                }
+        except Exception as e:
+            return {
+                "status": "failed",
+                "method": "Resend HTTP API",
+                "error": str(e),
+                "details": status_info
+            }
+            
+    # 2. Try SMTP fallback
     if not smtp_host or not smtp_user or not smtp_password:
-        return {"status": "failed", "error": "SMTP credentials not fully configured in environment variables", "details": status_info}
+        return {"status": "failed", "error": "No SMTP credentials or Resend API key configured", "details": status_info}
         
     try:
         if smtp_port == 465:
@@ -82,17 +129,16 @@ def test_smtp_endpoint():
             
         server.login(smtp_user, smtp_password)
         
-        # Send a quick test mail to yourself
         msg = MIMEText("This is an automated Render environment SMTP test.")
         msg['From'] = smtp_user
-        msg['To'] = smtp_user
+        msg['To'] = "sayantan05092004@gmail.com"
         msg['Subject'] = "[Community Hero] Render SMTP Verification"
         server.send_message(msg)
         server.quit()
         
-        return {"status": "success", "message": "SMTP connection and test email sent successfully from Render!", "details": status_info}
+        return {"status": "success", "method": "SMTP", "message": "SMTP connection and test email sent successfully from Render!", "details": status_info}
     except Exception as e:
-        return {"status": "failed", "error": str(e), "details": status_info}
+        return {"status": "failed", "method": "SMTP", "error": str(e), "details": status_info}
 
 @app.get("/")
 def read_root():
