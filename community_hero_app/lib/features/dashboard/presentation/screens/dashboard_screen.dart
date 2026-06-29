@@ -451,14 +451,94 @@ class _RecentActivityList extends StatelessWidget {
   final List<dynamic> activities;
   const _RecentActivityList({required this.activities});
 
+  IconData _getIconForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'pothole':
+      case 'road_damage':
+        return Icons.construction;
+      case 'streetlight out':
+      case 'broken_streetlight':
+        return Icons.lightbulb_outline;
+      case 'graffiti':
+        return Icons.brush;
+      case 'litter':
+      case 'garbage_dump':
+        return Icons.delete_outline;
+      case 'water leak':
+      case 'water_leakage':
+      case 'drainage_issue':
+        return Icons.water_drop_outlined;
+      default:
+        return Icons.report_problem_outlined;
+    }
+  }
+
+  Color _getColorForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'pothole':
+      case 'road_damage':
+        return const Color(0xFFFF8A65); // Orange
+      case 'streetlight out':
+      case 'broken_streetlight':
+        return const Color(0xFFFFD54F); // Yellow
+      case 'graffiti':
+        return const Color(0xFFBA68C8); // Purple
+      case 'litter':
+      case 'garbage_dump':
+        return const Color(0xFF81C784); // Green
+      case 'water leak':
+      case 'water_leakage':
+      case 'drainage_issue':
+        return const Color(0xFF4FC3F7); // Blue
+      default:
+        return const Color(0xFFE228FF); // Magenta
+    }
+  }
+
+  String _getRelativeTime(String? dateStr) {
+    if (dateStr == null) return 'Just now';
+    try {
+      final date = DateTime.parse(dateStr);
+      final diff = DateTime.now().difference(date);
+      if (diff.inDays > 0) {
+        return '${diff.inDays}d ago';
+      } else if (diff.inHours > 0) {
+        return '${diff.inHours}h ago';
+      } else if (diff.inMinutes > 0) {
+        return '${diff.inMinutes}m ago';
+      } else {
+        return 'Just now';
+      }
+    } catch (_) {
+      return 'Just now';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Generate some mock items if empty
-    final items = activities.isNotEmpty ? activities : [
-      {'title': 'Alex Chen was answered', 'time': '3 minutes ago', 'subtitle': '13 weeks ago', 'icon': Icons.comment, 'color': const Color(0xFF00FF5E)},
-      {'title': 'Community Impact in Resolved', 'time': '2 mins ago', 'subtitle': '30 weeks ago', 'icon': Icons.flag, 'color': const Color(0xFFE228FF)},
-      {'title': 'Community Impact started', 'time': '41 mins ago', 'subtitle': '41 weeks ago', 'icon': Icons.play_arrow, 'color': const Color(0xFF00B2FF)},
-    ];
+    if (activities.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.assignment_turned_in_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
+              const SizedBox(height: 12),
+              Text(
+                'No recent activity found',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 16),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Report issues to see them appear here',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final itemBgColor = isDark ? Colors.white : Colors.black;
@@ -466,10 +546,19 @@ class _RecentActivityList extends StatelessWidget {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: items.length,
+      itemCount: activities.length,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final item = items[index];
+        final item = activities[index];
+        final category = item['category'] as String? ?? 'Other';
+        final status = item['status'] as String? ?? 'Pending';
+        final title = item['title'] as String? ?? 'Community Issue';
+        final dateStr = item['created_at'] as String?;
+
+        final icon = _getIconForCategory(category);
+        final color = _getColorForCategory(category);
+        final timeStr = _getRelativeTime(dateStr);
+
         return GlassContainer(
           borderRadius: 16,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -482,10 +571,10 @@ class _RecentActivityList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: (item['color'] as Color? ?? Colors.white).withValues(alpha: 0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(item['icon'] as IconData? ?? Icons.notifications, color: item['color'] as Color? ?? Colors.white70, size: 20),
+                child: Icon(icon, color: color, size: 20),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -493,20 +582,20 @@ class _RecentActivityList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item['title'] as String? ?? 'Activity',
+                      title,
                       style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      item['subtitle'] as String? ?? '',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12),
+                      'Status: $status | Category: $category',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                     ),
                   ],
                 ),
               ),
               Text(
-                item['time'] as String? ?? 'Just now',
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12),
+                timeStr,
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
               ),
             ],
           ),
