@@ -277,7 +277,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
               // Photo Upload Section
               Text(
