@@ -52,6 +52,48 @@ app.include_router(issues.router, prefix="/api/issues", tags=["issues"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
 
+@app.get("/api/test-smtp")
+def test_smtp_endpoint():
+    import smtplib
+    from email.mime.text import MIMEText
+    from app.core.config import settings
+    
+    smtp_host = getattr(settings, "SMTP_HOST", "")
+    smtp_port = getattr(settings, "SMTP_PORT", 587)
+    smtp_user = getattr(settings, "SMTP_USER", "")
+    smtp_password = getattr(settings, "SMTP_PASSWORD", "")
+    
+    status_info = {
+        "smtp_host": smtp_host,
+        "smtp_port": smtp_port,
+        "smtp_user": smtp_user,
+        "password_configured": bool(smtp_password)
+    }
+    
+    if not smtp_host or not smtp_user or not smtp_password:
+        return {"status": "failed", "error": "SMTP credentials not fully configured in environment variables", "details": status_info}
+        
+    try:
+        if smtp_port == 465:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+            server.starttls()
+            
+        server.login(smtp_user, smtp_password)
+        
+        # Send a quick test mail to yourself
+        msg = MIMEText("This is an automated Render environment SMTP test.")
+        msg['From'] = smtp_user
+        msg['To'] = smtp_user
+        msg['Subject'] = "[Community Hero] Render SMTP Verification"
+        server.send_message(msg)
+        server.quit()
+        
+        return {"status": "success", "message": "SMTP connection and test email sent successfully from Render!", "details": status_info}
+    except Exception as e:
+        return {"status": "failed", "error": str(e), "details": status_info}
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Community Hero API"}
