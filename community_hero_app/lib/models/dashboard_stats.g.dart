@@ -12,6 +12,7 @@ _$DashboardStatsImpl _$$DashboardStatsImplFromJson(Map<String, dynamic> json) =>
       verifiedIssues: (json['verified_issues'] as num?)?.toInt() ?? 0,
       resolvedIssues: (json['resolved_issues'] as num?)?.toInt() ?? 0,
       pendingIssues: (json['pending_issues'] as num?)?.toInt() ?? 0,
+      totalVolunteers: (json['total_volunteers'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$DashboardStatsImplToJson(
@@ -21,4 +22,5 @@ Map<String, dynamic> _$$DashboardStatsImplToJson(
       'verified_issues': instance.verifiedIssues,
       'resolved_issues': instance.resolvedIssues,
       'pending_issues': instance.pendingIssues,
+      'total_volunteers': instance.totalVolunteers,
     };

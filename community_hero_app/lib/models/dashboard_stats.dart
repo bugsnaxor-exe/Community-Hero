@@ -11,6 +11,7 @@ class DashboardStats with _$DashboardStats {
     @JsonKey(name: 'verified_issues') @Default(0) int verifiedIssues,
     @JsonKey(name: 'resolved_issues') @Default(0) int resolvedIssues,
     @JsonKey(name: 'pending_issues') @Default(0) int pendingIssues,
+    @JsonKey(name: 'total_volunteers') @Default(0) int totalVolunteers,
   }) = _DashboardStats;
 
   factory DashboardStats.fromJson(Map<String, dynamic> json) => _$DashboardStatsFromJson(json);

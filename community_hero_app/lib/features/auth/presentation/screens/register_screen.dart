@@ -32,7 +32,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             _usernameController.text.trim(),
           );
       if (success && mounted) {
-        context.go('/home'); // AuthRepository auto-logs in on successful registration
+        context.go('/dashboard'); // AuthRepository auto-logs in on successful registration
       }
     }
   }

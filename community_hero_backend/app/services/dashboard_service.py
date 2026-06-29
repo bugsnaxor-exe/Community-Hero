@@ -5,9 +5,11 @@ from app.models.issue import Issue, IssueStatus
 class DashboardService:
     @staticmethod
     def get_stats(db: Session) -> dict:
+        from app.models.user import User
         total = db.query(Issue).count()
         verified = db.query(Issue).filter(Issue.status == IssueStatus.VERIFIED).count()
         resolved = db.query(Issue).filter(Issue.status == IssueStatus.RESOLVED).count()
+        volunteers = db.query(User).count()
         
         # Pending issues could be anything that isn't resolved or closed
         pending = db.query(Issue).filter(Issue.status.in_([IssueStatus.REPORTED, IssueStatus.VERIFIED, IssueStatus.ASSIGNED, IssueStatus.IN_PROGRESS])).count()
@@ -25,6 +27,7 @@ class DashboardService:
             "verified_issues": verified,
             "resolved_issues": resolved,
             "pending_issues": pending,
+            "total_volunteers": volunteers,
             "avg_resolution_time_hours": avg_hours
         }
 

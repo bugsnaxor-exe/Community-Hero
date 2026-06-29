@@ -93,7 +93,7 @@ class DashboardScreen extends ConsumerWidget {
                               const SizedBox(height: 16),
                               SizedBox(height: 320, child: _ResolvedCard(stats: dashboardState.value?['stats'])),
                               const SizedBox(height: 16),
-                              const SizedBox(height: 320, child: _NewVolunteersCard()),
+                              SizedBox(height: 320, child: _NewVolunteersCard(stats: dashboardState.value?['stats'])),
                             ],
                           );
                         }
@@ -105,7 +105,7 @@ class DashboardScreen extends ConsumerWidget {
                               const SizedBox(width: 24),
                               Expanded(child: _ResolvedCard(stats: dashboardState.value?['stats'])),
                               const SizedBox(width: 24),
-                              const Expanded(child: _NewVolunteersCard()),
+                              Expanded(child: _NewVolunteersCard(stats: dashboardState.value?['stats'])),
                             ],
                           ),
                         );
@@ -316,13 +316,18 @@ class _ResolvedCard extends StatelessWidget {
     final subtitleColor = isDark ? Colors.white70 : Colors.black54;
     final labelColor = isDark ? Colors.white54 : Colors.black45;
 
+    final total = stats?['total_issues'] ?? 0;
+    final resolved = stats?['resolved_issues'] ?? 0;
+    final double percentage = total > 0 ? (resolved / total) * 100 : 0.0;
+    final double progress = total > 0 ? (resolved / total) : 0.0;
+
     return NeonCard(
       glowColor: const Color(0xFF00B2FF), // Intense Neon Blue
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Text(
-            '85%',
+            '${percentage.toStringAsFixed(0)}%',
             style: TextStyle(color: textColor, fontSize: 48, fontWeight: FontWeight.bold),
           ),
           Text('Resolved', style: TextStyle(color: subtitleColor)),
@@ -335,13 +340,13 @@ class _ResolvedCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     CircularProgressIndicator(
-                      value: 0.85,
+                      value: progress,
                       strokeWidth: 10,
                       backgroundColor: const Color(0xFF00B2FF).withValues(alpha: 0.2),
                       color: const Color(0xFF00B2FF),
                     ),
                     Center(
-                      child: Text('85%', style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 20)),
+                      child: Text('${percentage.toStringAsFixed(0)}%', style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 20)),
                     ),
                   ],
                 ),
@@ -357,7 +362,8 @@ class _ResolvedCard extends StatelessWidget {
 }
 
 class _NewVolunteersCard extends StatelessWidget {
-  const _NewVolunteersCard();
+  final Map<String, dynamic>? stats;
+  const _NewVolunteersCard({this.stats});
 
   @override
   Widget build(BuildContext context) {
@@ -366,13 +372,14 @@ class _NewVolunteersCard extends StatelessWidget {
     final subtitleColor = isDark ? Colors.white70 : Colors.black54;
     final labelColor = isDark ? Colors.white54 : Colors.black45;
 
+    final value = stats?['total_volunteers'] ?? 0;
     return NeonCard(
       glowColor: const Color(0xFFE228FF), // Intense Neon Magenta
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Text(
-            '312',
+            value.toString(),
             style: TextStyle(color: textColor, fontSize: 48, fontWeight: FontWeight.bold),
           ),
           Text('New Volunteers', style: TextStyle(color: subtitleColor)),

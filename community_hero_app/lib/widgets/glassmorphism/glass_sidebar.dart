@@ -106,35 +106,35 @@ class GlassSidebar extends ConsumerWidget {
             _NavItem(
               icon: Icons.dashboard_rounded,
               label: 'Dashboard',
-              isSelected: navigationShell.currentIndex == 3, // Assuming Dashboard is index 3
-              onTap: () => _onTap(3),
+              isSelected: navigationShell.currentIndex == 0,
+              onTap: () => _onTap(0),
             ),
             const SizedBox(height: 8),
             _NavItem(
               icon: Icons.report_problem_rounded,
               label: 'Issues',
-              isSelected: navigationShell.currentIndex == 1, // Assuming Map/Issues is index 1
+              isSelected: navigationShell.currentIndex == 1,
               onTap: () => _onTap(1),
             ),
             const SizedBox(height: 8),
             _NavItem(
               icon: Icons.insert_chart_rounded,
               label: 'Reports',
-              isSelected: navigationShell.currentIndex == 2, // Assuming Report is index 2
+              isSelected: navigationShell.currentIndex == 2,
               onTap: () => _onTap(2),
             ),
             const SizedBox(height: 8),
             _NavItem(
               icon: Icons.people_alt_rounded,
               label: 'Volunteers',
-              isSelected: navigationShell.currentIndex == 0, // Assuming Home is index 0
-              onTap: () => _onTap(0),
+              isSelected: navigationShell.currentIndex == 3,
+              onTap: () => _onTap(3),
             ),
             const SizedBox(height: 8),
             _NavItem(
               icon: Icons.settings_rounded,
               label: 'Settings',
-              isSelected: navigationShell.currentIndex == 4, // Assuming Profile/Settings is index 4
+              isSelected: navigationShell.currentIndex == 4,
               onTap: () => _onTap(4),
             ),
           ],

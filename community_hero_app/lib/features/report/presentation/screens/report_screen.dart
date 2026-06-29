@@ -124,7 +124,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Report submitted successfully!'), backgroundColor: Colors.green),
         );
-        context.go('/home'); // Redirect back to home
+        context.go('/dashboard'); // Redirect back to dashboard
       }
     }
   }

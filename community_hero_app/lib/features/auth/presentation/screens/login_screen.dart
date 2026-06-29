@@ -35,7 +35,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 : null,
           );
       if (success && mounted) {
-        context.go('/home');
+        context.go('/dashboard');
       }
     }
   }

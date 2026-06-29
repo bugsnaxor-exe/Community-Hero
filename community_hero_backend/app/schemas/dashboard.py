@@ -6,6 +6,7 @@ class DashboardStatsResponse(BaseModel):
     verified_issues: int
     resolved_issues: int
     pending_issues: int
+    total_volunteers: Optional[int] = 0
     avg_resolution_time_hours: Optional[float]
 
 class CategoryCountResponse(BaseModel):

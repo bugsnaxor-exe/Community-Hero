@@ -158,9 +158,9 @@ class ResponsiveShell extends StatelessWidget {
                     onDestinationSelected: _onTap,
               destinations: const [
                 NavigationDestination(
-                  icon: Icon(Icons.people_alt_outlined),
-                  selectedIcon: Icon(Icons.people_alt),
-                  label: 'Volunteers',
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard),
+                  label: 'Dashboard',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.report_problem_outlined),
@@ -173,9 +173,9 @@ class ResponsiveShell extends StatelessWidget {
                   label: 'Reports',
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.dashboard_outlined),
-                  selectedIcon: Icon(Icons.dashboard),
-                  label: 'Dashboard',
+                  icon: Icon(Icons.people_alt_outlined),
+                  selectedIcon: Icon(Icons.people_alt),
+                  label: 'Volunteers',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.settings_outlined),

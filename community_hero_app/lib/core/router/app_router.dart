@@ -66,9 +66,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return loggingIn ? null : '/login';
       }
 
-      // If authenticated and trying to access login/register, redirect to home
+      // If authenticated and trying to access login/register, redirect to dashboard
       if (loggingIn) {
-        return '/home';
+        return '/dashboard';
       }
 
       return null;
@@ -94,13 +94,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           return ResponsiveShell(navigationShell: navigationShell);
         },
         branches: [
-          // Branch 0: Home
+          // Branch 0: Dashboard
           StatefulShellBranch(
-            navigatorKey: shellNavigatorHomeKey,
+            navigatorKey: shellNavigatorDashboardKey,
             routes: [
               GoRoute(
-                path: '/home',
-                builder: (context, state) => const HomeScreen(),
+                path: '/dashboard',
+                builder: (context, state) => const DashboardScreen(),
               ),
             ],
           ),
@@ -124,13 +124,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Branch 3: Dashboard
+          // Branch 3: Home (Volunteers)
           StatefulShellBranch(
-            navigatorKey: shellNavigatorDashboardKey,
+            navigatorKey: shellNavigatorHomeKey,
             routes: [
               GoRoute(
-                path: '/dashboard',
-                builder: (context, state) => const DashboardScreen(),
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
               ),
             ],
           ),
