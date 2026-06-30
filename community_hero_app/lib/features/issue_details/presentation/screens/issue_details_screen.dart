@@ -121,7 +121,7 @@ class _IssueDetailsScreenState extends ConsumerState<IssueDetailsScreen> {
                   // Collapsible App Bar with image
                   SliverAppBar(
                     backgroundColor: theme.colorScheme.surface,
-                    expandedHeight: imageUrls.isNotEmpty ? 300.0 : 0.0,
+                    expandedHeight: 300.0,
                     floating: false,
                     pinned: true,
                     leading: IconButton(
@@ -149,9 +149,9 @@ class _IssueDetailsScreenState extends ConsumerState<IssueDetailsScreen> {
                       ),
                       const SizedBox(width: 8),
                     ],
-                    flexibleSpace: imageUrls.isNotEmpty
-                        ? FlexibleSpaceBar(
-                            background: Stack(
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: imageUrls.isNotEmpty
+                          ? Stack(
                               fit: StackFit.expand,
                               children: [
                                 PageView.builder(
@@ -195,12 +195,18 @@ class _IssueDetailsScreenState extends ConsumerState<IssueDetailsScreen> {
                                     ),
                                   ),
                               ],
+                            )
+                          : Container(
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              child: Center(
+                                child: Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 64,
+                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                ),
+                              ),
                             ),
-                          )
-                        : null,
-                    title: imageUrls.isEmpty
-                        ? Text(issue.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
-                        : null,
+                    ),
                   ),
 
                   // Content
