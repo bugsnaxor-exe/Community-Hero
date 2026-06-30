@@ -448,7 +448,7 @@ class _NewVolunteersCard extends StatelessWidget {
   }
 }
 
-class _RecentActivityList extends StatelessWidget {
+class _RecentActivityList extends ConsumerWidget {
   final List<dynamic> activities;
   const _RecentActivityList({required this.activities});
 
@@ -516,7 +516,7 @@ class _RecentActivityList extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (activities.isEmpty) {
       return Center(
         child: Padding(
@@ -597,9 +597,45 @@ class _RecentActivityList extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(
-                  timeStr,
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      timeStr,
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
+                    ),
+                    if (status.toLowerCase() != 'resolved') ...[
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () {
+                          final id = item['id'];
+                          if (id != null) {
+                            ref.read(dashboardControllerProvider.notifier).resolveIssue(id as int);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_outline, color: Colors.green, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                'Mark Resolved',
+                                style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),

@@ -32,4 +32,13 @@ class DashboardRepository {
       };
     }
   }
+
+  Future<void> resolveIssue(dynamic issueId) async {
+    try {
+      await _dio.patch('/issues/$issueId/status', data: {'status': 'resolved'});
+    } catch (e) {
+      // throw error to be handled by controller
+      throw Exception('Failed to resolve issue: $e');
+    }
+  }
 }

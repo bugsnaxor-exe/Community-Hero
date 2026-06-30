@@ -5,6 +5,7 @@ import '../../../../models/issue.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../home/presentation/providers/home_providers.dart';
+import '../providers/dashboard_controller.dart';
 
 class NearbyIssuesSidebar extends ConsumerWidget {
   const NearbyIssuesSidebar({super.key});
@@ -135,36 +136,68 @@ class NearbyIssuesSidebar extends ConsumerWidget {
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: issue.status.toLowerCase() == 'resolved' 
-                                            ? Colors.blue.withValues(alpha: 0.2) 
-                                            : Colors.green.withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Container(
-                                            width: 6,
-                                            height: 6,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: issue.status.toLowerCase() == 'resolved' ? Colors.blue : Colors.green,
-                                            ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: issue.status.toLowerCase() == 'resolved' 
+                                                ? Colors.blue.withValues(alpha: 0.2) 
+                                                : Colors.green.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            issue.status,
-                                            style: TextStyle(
-                                              color: issue.status.toLowerCase() == 'resolved' ? Colors.blue : Colors.green,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 6,
+                                                height: 6,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: issue.status.toLowerCase() == 'resolved' ? Colors.blue : Colors.green,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                issue.status,
+                                                style: TextStyle(
+                                                  color: issue.status.toLowerCase() == 'resolved' ? Colors.blue : Colors.green,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (issue.status.toLowerCase() != 'resolved') ...[
+                                          const SizedBox(width: 8),
+                                          InkWell(
+                                            onTap: () {
+                                              ref.read(dashboardControllerProvider.notifier).resolveIssue(issue.id);
+                                            },
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.green.withValues(alpha: 0.2),
+                                                borderRadius: BorderRadius.circular(12),
+                                                border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
+                                              ),
+                                              child: const Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(Icons.check_circle_outline, color: Colors.green, size: 10),
+                                                  SizedBox(width: 4),
+                                                  Text(
+                                                    'Resolve',
+                                                    style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ],
-                                      ),
+                                      ],
                                     )
                                   ],
                                 ),
