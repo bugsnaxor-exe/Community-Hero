@@ -46,10 +46,26 @@ def create_issue(
             detail="Maximum of 6 images allowed per report."
         )
 
+    # Map frontend pretty strings to backend enum values
+    category_map = {
+        "pothole": "pothole",
+        "streetlight out": "broken_streetlight",
+        "litter": "garbage_dump",
+        "graffiti": "other",
+        "water leak": "water_leakage",
+        "other": "other",
+        "broken_streetlight": "broken_streetlight",
+        "water_leakage": "water_leakage",
+        "garbage_dump": "garbage_dump",
+        "road_damage": "road_damage",
+        "drainage_issue": "drainage_issue"
+    }
+    db_category = category_map.get(category.lower().strip(), "other")
+
     # Reconstruct IssueCreate for duplicate checking
     issue_in = IssueCreate(
         title=title,
-        category=category,
+        category=db_category,
         description=description,
         lat=latitude,
         lng=longitude
@@ -78,7 +94,7 @@ def create_issue(
     new_issue = Issue(
         title=title,
         reporter_id=current_user.id,
-        category=category,
+        category=db_category,
         description=description,
         lat=latitude,
         lng=longitude,

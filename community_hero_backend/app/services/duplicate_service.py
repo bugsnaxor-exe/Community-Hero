@@ -30,8 +30,10 @@ class DuplicateDetectionService:
             safe_distance_expr < radius_meters
         ).all()
         
+        desc1 = (new_issue.description or "").lower()
         for issue in nearby_issues:
-            similarity = difflib.SequenceMatcher(None, new_issue.description.lower(), issue.description.lower()).ratio()
+            desc2 = (issue.description or "").lower()
+            similarity = difflib.SequenceMatcher(None, desc1, desc2).ratio()
             if similarity >= similarity_threshold:
                 return issue
                 
