@@ -106,7 +106,7 @@ Reporter Account: {reporter_email}
         msg['From'] = smtp_user
         msg['To'] = to_email
         msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
         for path in image_paths:
             if os.path.exists(path):

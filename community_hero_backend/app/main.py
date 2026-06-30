@@ -76,6 +76,33 @@ def test_smtp_endpoint():
         "openrouter_key_preview": f"{openrouter_api_key[:5]}...{openrouter_api_key[-3:]}" if openrouter_api_key else None
     }
     
+    openrouter_test = None
+    if openrouter_api_key:
+        try:
+            from openai import OpenAI
+            client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=openrouter_api_key,
+            )
+            response = client.chat.completions.create(
+                model="google/gemini-1.5-flash",
+                messages=[
+                    {"role": "user", "content": "Hello"}
+                ],
+                max_tokens=10,
+                timeout=10,
+            )
+            openrouter_test = {
+                "status": "success",
+                "response": response.choices[0].message.content.strip()
+            }
+        except Exception as e:
+            openrouter_test = {
+                "status": "failed",
+                "error": str(e)
+            }
+    status_info["openrouter_test"] = openrouter_test
+    
     # 1. Try Resend if configured
     if resend_api_key:
         try:
