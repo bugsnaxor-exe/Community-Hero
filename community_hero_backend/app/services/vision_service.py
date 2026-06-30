@@ -14,8 +14,8 @@ def encode_image_to_base64(image_path: str) -> str:
 
 # Models to try in order — first available one wins
 MODELS = [
-    "google/gemini-2.5-flash-preview",
-    "google/gemini-1.5-flash",
+    "google/gemini-2.5-flash",
+    "google/gemini-flash-latest",
 ]
 
 def analyze_issue_image(image_path: str) -> dict:

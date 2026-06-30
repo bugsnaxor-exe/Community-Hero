@@ -85,7 +85,7 @@ def test_smtp_endpoint():
                 api_key=openrouter_api_key,
             )
             response = client.chat.completions.create(
-                model="google/gemini-1.5-flash",
+                model="google/gemini-2.5-flash",
                 messages=[
                     {"role": "user", "content": "Hello"}
                 ],
