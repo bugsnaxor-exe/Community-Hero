@@ -610,7 +610,7 @@ class _RecentActivityList extends ConsumerWidget {
                         onTap: () {
                           final id = item['id'];
                           if (id != null) {
-                            ref.read(dashboardControllerProvider.notifier).resolveIssue(id as int);
+                            ref.read(dashboardControllerProvider.notifier).resolveIssue(id);
                           }
                         },
                         borderRadius: BorderRadius.circular(12),
