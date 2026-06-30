@@ -140,7 +140,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           ),
         ),
       ),
-      ),
     ));
   }
 }
