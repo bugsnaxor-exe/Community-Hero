@@ -31,8 +31,8 @@ class DuplicateDetectionService:
         ).all()
         
         desc1 = (new_issue.description or "").strip()
-        # Only check duplicate if the description is substantial (>= 15 characters)
-        if len(desc1) < 15:
+        # Only check duplicate if the description is substantial (>= 30 characters)
+        if len(desc1) < 30:
             return None
             
         desc1_lower = desc1.lower()

@@ -117,14 +117,30 @@ def create_issue(
         for file in valid_images:
             # Check content_type first
             is_image_content = False
+            mime_to_ext = {
+                "image/jpeg": "jpg",
+                "image/jpg": "jpg",
+                "image/png": "png",
+                "image/webp": "webp",
+                "image/heic": "heic",
+                "image/heif": "heif",
+                "image/gif": "gif",
+                "image/bmp": "bmp",
+                "image/tiff": "tiff",
+            }
+            content_type_ext = ""
             if file.content_type and file.content_type.startswith("image/"):
                 is_image_content = True
+                content_type_ext = mime_to_ext.get(file.content_type.lower(), "jpg")
                 
+            # Get extension from filename, fall back to content_type extension
             file_extension = ""
-            if "." in file.filename:
+            if file.filename and "." in file.filename:
                 file_extension = file.filename.split(".")[-1].lower()
+            if not file_extension:
+                file_extension = content_type_ext or "jpg"
                 
-            if not is_image_content and (not file_extension or file_extension not in ALLOWED_EXTENSIONS):
+            if not is_image_content and file_extension not in ALLOWED_EXTENSIONS:
                 raise HTTPException(
                     status_code=400,
                     detail=f"File type '{file_extension}' not allowed. Please upload a valid image file (JPEG, PNG, WEBP, HEIC, etc.)."
@@ -154,30 +170,24 @@ def create_issue(
             
         db.commit()
         
-        # Run AI Vision check on the first image
+        # Run AI Vision check on the first image (enrichment only - never blocks submission)
         if saved_paths:
-            ai_data = analyze_issue_image(saved_paths[0])
-            if ai_data:
-                # 2. Reject if the AI determines the image does not represent a valid community issue
-                if str(ai_data.get("category", "")).strip().lower() == "invalid":
-                    # Clean up DB records and files
-                    db.delete(new_issue)
+            try:
+                ai_data = analyze_issue_image(saved_paths[0])
+                if ai_data:
+                    category_result = str(ai_data.get("category", "")).strip().lower()
+                    # Only enrich - never block based on AI result alone
+                    # AI may misclassify real civic issues, so we trust the user's upload
+                    new_issue.ai_category = ai_data.get("category")
+                    new_issue.ai_confidence = ai_data.get("confidence")
+                    new_issue.severity = ai_data.get("severity") or new_issue.severity
+                    new_issue.ai_reasoning = ai_data.get("reasoning")
                     db.commit()
-                    for p in saved_paths:
-                        if os.path.exists(p):
-                            os.remove(p)
-                    raise HTTPException(
-                        status_code=400,
-                        detail="AI validation failed: The uploaded image does not appear to contain a valid community issue (e.g. it is a screenshot, QR code, or unrelated image). Please upload a photo of the actual issue."
-                    )
-                
-                # Enrich issue properties if valid
-                new_issue.ai_category = ai_data.get("category")
-                new_issue.ai_confidence = ai_data.get("confidence")
-                new_issue.severity = ai_data.get("severity")
-                new_issue.ai_reasoning = ai_data.get("reasoning")
-                db.commit()
-                db.refresh(new_issue)
+                    db.refresh(new_issue)
+            except Exception as ai_error:
+                # AI failures must NEVER block report submission
+                import logging
+                logging.getLogger(__name__).warning(f"AI enrichment failed (non-critical): {ai_error}")
 
         # 3. Send email submission notification in the background
         background_tasks.add_task(
