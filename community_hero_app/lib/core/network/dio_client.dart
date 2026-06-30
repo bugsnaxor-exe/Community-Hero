@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:go_router/go_router.dart';
 import '../constants/app_constants.dart';
+import '../navigation/navigator_service.dart';
 
 final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
   return const FlutterSecureStorage();
@@ -36,8 +38,19 @@ final dioProvider = Provider<Dio>((ref) {
         }
         return handler.next(options);
       },
-      onError: (DioException e, handler) {
-        // Handle global errors, token refresh, etc. here
+      onError: (DioException e, handler) async {
+        if (e.response?.statusCode == 401) {
+          // Clear credentials
+          await secureStorage.delete(key: AppConstants.tokenKey);
+          await secureStorage.delete(key: AppConstants.userKey);
+          await secureStorage.delete(key: 'session_last_active_time');
+
+          // Redirect to login screen
+          final context = rootNavigatorKey.currentContext;
+          if (context != null && context.mounted) {
+            context.go('/login');
+          }
+        }
         return handler.next(e);
       },
     ),

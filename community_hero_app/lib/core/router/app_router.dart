@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../navigation/navigator_service.dart';
 import '../../widgets/responsive_shell.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
@@ -43,7 +44,6 @@ class DummyScreen extends StatelessWidget {
 }
 
 // --- ROUTER CONFIGURATION ---
-final rootNavigatorKey = GlobalKey<NavigatorState>();
 final shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'homeShell');
 final shellNavigatorMapKey = GlobalKey<NavigatorState>(debugLabel: 'mapShell');
 final shellNavigatorReportKey = GlobalKey<NavigatorState>(debugLabel: 'reportShell');
