@@ -64,13 +64,16 @@ def test_smtp_endpoint():
     smtp_password = getattr(settings, "SMTP_PASSWORD", "")
     resend_api_key = getattr(settings, "RESEND_API_KEY", "")
     
+    openrouter_api_key = getattr(settings, "OPENROUTER_API_KEY", "")
     status_info = {
         "smtp_host": smtp_host,
         "smtp_port": smtp_port,
         "smtp_user": smtp_user,
         "smtp_password_configured": bool(smtp_password),
         "resend_key_configured": bool(resend_api_key),
-        "resend_key_preview": f"{resend_api_key[:5]}...{resend_api_key[-3:]}" if resend_api_key else None
+        "resend_key_preview": f"{resend_api_key[:5]}...{resend_api_key[-3:]}" if resend_api_key else None,
+        "openrouter_key_configured": bool(openrouter_api_key),
+        "openrouter_key_preview": f"{openrouter_api_key[:5]}...{openrouter_api_key[-3:]}" if openrouter_api_key else None
     }
     
     # 1. Try Resend if configured
