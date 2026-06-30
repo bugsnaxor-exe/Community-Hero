@@ -37,11 +37,11 @@ final nearbyIssuesProvider = FutureProvider<List<Issue>>((ref) async {
     longitude = 87.786;
   }
   
-  // 3. Fetch issues around this location within a 500km radius (for demo visibility)
+  // 3. Fetch issues around this location within a 5km radius
   final response = await dio.get('/issues/nearby', queryParameters: {
     'lat': latitude,
     'lng': longitude,
-    'radius': 500, // 500 km
+    'radius': 5, // 5 km
   });
   
   final List<dynamic> data = response.data;
