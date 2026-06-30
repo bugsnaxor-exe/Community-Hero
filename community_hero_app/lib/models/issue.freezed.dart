@@ -26,14 +26,19 @@ mixin _$Issue {
   String get category => throw _privateConstructorUsedError;
   String get severity => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lat')
   double get latitude => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lng')
   double get longitude => throw _privateConstructorUsedError;
   @JsonKey(name: 'verification_count')
   int get verificationCount => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
-  DateTime? get createdAt => throw _privateConstructorUsedError;
+  DateTime? get createdAt =>
+      throw _privateConstructorUsedError; // Single image_url for list views (from feed/home endpoints)
   @JsonKey(name: 'image_url')
-  String? get imageUrl => throw _privateConstructorUsedError;
+  String? get imageUrl =>
+      throw _privateConstructorUsedError; // Full images array for detail view
+  List<IssueImage> get images => throw _privateConstructorUsedError;
 
   /// Serializes this Issue to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -56,11 +61,12 @@ abstract class $IssueCopyWith<$Res> {
       String category,
       String severity,
       String status,
-      double latitude,
-      double longitude,
+      @JsonKey(name: 'lat') double latitude,
+      @JsonKey(name: 'lng') double longitude,
       @JsonKey(name: 'verification_count') int verificationCount,
       @JsonKey(name: 'created_at') DateTime? createdAt,
-      @JsonKey(name: 'image_url') String? imageUrl});
+      @JsonKey(name: 'image_url') String? imageUrl,
+      List<IssueImage> images});
 }
 
 /// @nodoc
@@ -89,6 +95,7 @@ class _$IssueCopyWithImpl<$Res, $Val extends Issue>
     Object? verificationCount = null,
     Object? createdAt = freezed,
     Object? imageUrl = freezed,
+    Object? images = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -135,6 +142,10 @@ class _$IssueCopyWithImpl<$Res, $Val extends Issue>
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
               as String?,
+      images: null == images
+          ? _value.images
+          : images // ignore: cast_nullable_to_non_nullable
+              as List<IssueImage>,
     ) as $Val);
   }
 }
@@ -153,11 +164,12 @@ abstract class _$$IssueImplCopyWith<$Res> implements $IssueCopyWith<$Res> {
       String category,
       String severity,
       String status,
-      double latitude,
-      double longitude,
+      @JsonKey(name: 'lat') double latitude,
+      @JsonKey(name: 'lng') double longitude,
       @JsonKey(name: 'verification_count') int verificationCount,
       @JsonKey(name: 'created_at') DateTime? createdAt,
-      @JsonKey(name: 'image_url') String? imageUrl});
+      @JsonKey(name: 'image_url') String? imageUrl,
+      List<IssueImage> images});
 }
 
 /// @nodoc
@@ -184,6 +196,7 @@ class __$$IssueImplCopyWithImpl<$Res>
     Object? verificationCount = null,
     Object? createdAt = freezed,
     Object? imageUrl = freezed,
+    Object? images = null,
   }) {
     return _then(_$IssueImpl(
       id: null == id
@@ -230,6 +243,10 @@ class __$$IssueImplCopyWithImpl<$Res>
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
               as String?,
+      images: null == images
+          ? _value._images
+          : images // ignore: cast_nullable_to_non_nullable
+              as List<IssueImage>,
     ));
   }
 }
@@ -244,11 +261,13 @@ class _$IssueImpl implements _Issue {
       this.category = 'General',
       this.severity = 'Low',
       this.status = 'Open',
-      this.latitude = 0.0,
-      this.longitude = 0.0,
+      @JsonKey(name: 'lat') this.latitude = 0.0,
+      @JsonKey(name: 'lng') this.longitude = 0.0,
       @JsonKey(name: 'verification_count') this.verificationCount = 0,
       @JsonKey(name: 'created_at') this.createdAt,
-      @JsonKey(name: 'image_url') this.imageUrl});
+      @JsonKey(name: 'image_url') this.imageUrl,
+      final List<IssueImage> images = const []})
+      : _images = images;
 
   factory _$IssueImpl.fromJson(Map<String, dynamic> json) =>
       _$$IssueImplFromJson(json);
@@ -271,10 +290,10 @@ class _$IssueImpl implements _Issue {
   @JsonKey()
   final String status;
   @override
-  @JsonKey()
+  @JsonKey(name: 'lat')
   final double latitude;
   @override
-  @JsonKey()
+  @JsonKey(name: 'lng')
   final double longitude;
   @override
   @JsonKey(name: 'verification_count')
@@ -282,13 +301,24 @@ class _$IssueImpl implements _Issue {
   @override
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
+// Single image_url for list views (from feed/home endpoints)
   @override
   @JsonKey(name: 'image_url')
   final String? imageUrl;
+// Full images array for detail view
+  final List<IssueImage> _images;
+// Full images array for detail view
+  @override
+  @JsonKey()
+  List<IssueImage> get images {
+    if (_images is EqualUnmodifiableListView) return _images;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_images);
+  }
 
   @override
   String toString() {
-    return 'Issue(id: $id, title: $title, description: $description, category: $category, severity: $severity, status: $status, latitude: $latitude, longitude: $longitude, verificationCount: $verificationCount, createdAt: $createdAt, imageUrl: $imageUrl)';
+    return 'Issue(id: $id, title: $title, description: $description, category: $category, severity: $severity, status: $status, latitude: $latitude, longitude: $longitude, verificationCount: $verificationCount, createdAt: $createdAt, imageUrl: $imageUrl, images: $images)';
   }
 
   @override
@@ -314,7 +344,8 @@ class _$IssueImpl implements _Issue {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl));
+                other.imageUrl == imageUrl) &&
+            const DeepCollectionEquality().equals(other._images, _images));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -331,7 +362,8 @@ class _$IssueImpl implements _Issue {
       longitude,
       verificationCount,
       createdAt,
-      imageUrl);
+      imageUrl,
+      const DeepCollectionEquality().hash(_images));
 
   /// Create a copy of Issue
   /// with the given fields replaced by the non-null parameter values.
@@ -357,11 +389,12 @@ abstract class _Issue implements Issue {
       final String category,
       final String severity,
       final String status,
-      final double latitude,
-      final double longitude,
+      @JsonKey(name: 'lat') final double latitude,
+      @JsonKey(name: 'lng') final double longitude,
       @JsonKey(name: 'verification_count') final int verificationCount,
       @JsonKey(name: 'created_at') final DateTime? createdAt,
-      @JsonKey(name: 'image_url') final String? imageUrl}) = _$IssueImpl;
+      @JsonKey(name: 'image_url') final String? imageUrl,
+      final List<IssueImage> images}) = _$IssueImpl;
 
   factory _Issue.fromJson(Map<String, dynamic> json) = _$IssueImpl.fromJson;
 
@@ -378,23 +411,230 @@ abstract class _Issue implements Issue {
   @override
   String get status;
   @override
+  @JsonKey(name: 'lat')
   double get latitude;
   @override
+  @JsonKey(name: 'lng')
   double get longitude;
   @override
   @JsonKey(name: 'verification_count')
   int get verificationCount;
   @override
   @JsonKey(name: 'created_at')
-  DateTime? get createdAt;
+  DateTime?
+      get createdAt; // Single image_url for list views (from feed/home endpoints)
   @override
   @JsonKey(name: 'image_url')
-  String? get imageUrl;
+  String? get imageUrl; // Full images array for detail view
+  @override
+  List<IssueImage> get images;
 
   /// Create a copy of Issue
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$IssueImplCopyWith<_$IssueImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+IssueImage _$IssueImageFromJson(Map<String, dynamic> json) {
+  return _IssueImage.fromJson(json);
+}
+
+/// @nodoc
+mixin _$IssueImage {
+  String get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'image_url')
+  String get imageUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
+  DateTime? get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this IssueImage to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of IssueImage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $IssueImageCopyWith<IssueImage> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $IssueImageCopyWith<$Res> {
+  factory $IssueImageCopyWith(
+          IssueImage value, $Res Function(IssueImage) then) =
+      _$IssueImageCopyWithImpl<$Res, IssueImage>;
+  @useResult
+  $Res call(
+      {String id,
+      @JsonKey(name: 'image_url') String imageUrl,
+      @JsonKey(name: 'created_at') DateTime? createdAt});
+}
+
+/// @nodoc
+class _$IssueImageCopyWithImpl<$Res, $Val extends IssueImage>
+    implements $IssueImageCopyWith<$Res> {
+  _$IssueImageCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of IssueImage
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? imageUrl = null,
+    Object? createdAt = freezed,
+  }) {
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      imageUrl: null == imageUrl
+          ? _value.imageUrl
+          : imageUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$IssueImageImplCopyWith<$Res>
+    implements $IssueImageCopyWith<$Res> {
+  factory _$$IssueImageImplCopyWith(
+          _$IssueImageImpl value, $Res Function(_$IssueImageImpl) then) =
+      __$$IssueImageImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String id,
+      @JsonKey(name: 'image_url') String imageUrl,
+      @JsonKey(name: 'created_at') DateTime? createdAt});
+}
+
+/// @nodoc
+class __$$IssueImageImplCopyWithImpl<$Res>
+    extends _$IssueImageCopyWithImpl<$Res, _$IssueImageImpl>
+    implements _$$IssueImageImplCopyWith<$Res> {
+  __$$IssueImageImplCopyWithImpl(
+      _$IssueImageImpl _value, $Res Function(_$IssueImageImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of IssueImage
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? imageUrl = null,
+    Object? createdAt = freezed,
+  }) {
+    return _then(_$IssueImageImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      imageUrl: null == imageUrl
+          ? _value.imageUrl
+          : imageUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$IssueImageImpl implements _IssueImage {
+  const _$IssueImageImpl(
+      {required this.id,
+      @JsonKey(name: 'image_url') required this.imageUrl,
+      @JsonKey(name: 'created_at') this.createdAt});
+
+  factory _$IssueImageImpl.fromJson(Map<String, dynamic> json) =>
+      _$$IssueImageImplFromJson(json);
+
+  @override
+  final String id;
+  @override
+  @JsonKey(name: 'image_url')
+  final String imageUrl;
+  @override
+  @JsonKey(name: 'created_at')
+  final DateTime? createdAt;
+
+  @override
+  String toString() {
+    return 'IssueImage(id: $id, imageUrl: $imageUrl, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$IssueImageImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.imageUrl, imageUrl) ||
+                other.imageUrl == imageUrl) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, imageUrl, createdAt);
+
+  /// Create a copy of IssueImage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$IssueImageImplCopyWith<_$IssueImageImpl> get copyWith =>
+      __$$IssueImageImplCopyWithImpl<_$IssueImageImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$IssueImageImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _IssueImage implements IssueImage {
+  const factory _IssueImage(
+          {required final String id,
+          @JsonKey(name: 'image_url') required final String imageUrl,
+          @JsonKey(name: 'created_at') final DateTime? createdAt}) =
+      _$IssueImageImpl;
+
+  factory _IssueImage.fromJson(Map<String, dynamic> json) =
+      _$IssueImageImpl.fromJson;
+
+  @override
+  String get id;
+  @override
+  @JsonKey(name: 'image_url')
+  String get imageUrl;
+  @override
+  @JsonKey(name: 'created_at')
+  DateTime? get createdAt;
+
+  /// Create a copy of IssueImage
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$IssueImageImplCopyWith<_$IssueImageImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

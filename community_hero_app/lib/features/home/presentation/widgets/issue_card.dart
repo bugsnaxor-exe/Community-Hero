@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../widgets/glassmorphism/glass_container.dart';
 import '../../../../models/issue.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_constants.dart';
 
 class IssueCard extends StatelessWidget {
   final Issue issue;
@@ -63,7 +64,9 @@ class IssueCard extends StatelessWidget {
                     color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
                     child: issue.imageUrl != null && issue.imageUrl!.isNotEmpty
                         ? Image.network(
-                            issue.imageUrl!,
+                            issue.imageUrl!.startsWith('http') 
+                                ? issue.imageUrl! 
+                                : '${AppConstants.baseUrl.replaceAll(RegExp(r'/api$'), '')}${issue.imageUrl}',
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
                                 Icon(Icons.broken_image_outlined, color: placeholderColor),

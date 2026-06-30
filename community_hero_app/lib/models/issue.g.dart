@@ -13,13 +13,17 @@ _$IssueImpl _$$IssueImplFromJson(Map<String, dynamic> json) => _$IssueImpl(
       category: json['category'] as String? ?? 'General',
       severity: json['severity'] as String? ?? 'Low',
       status: json['status'] as String? ?? 'Open',
-      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
-      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      latitude: (json['lat'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['lng'] as num?)?.toDouble() ?? 0.0,
       verificationCount: (json['verification_count'] as num?)?.toInt() ?? 0,
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
       imageUrl: json['image_url'] as String?,
+      images: (json['images'] as List<dynamic>?)
+              ?.map((e) => IssueImage.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$IssueImplToJson(_$IssueImpl instance) =>
@@ -30,9 +34,26 @@ Map<String, dynamic> _$$IssueImplToJson(_$IssueImpl instance) =>
       'category': instance.category,
       'severity': instance.severity,
       'status': instance.status,
-      'latitude': instance.latitude,
-      'longitude': instance.longitude,
+      'lat': instance.latitude,
+      'lng': instance.longitude,
       'verification_count': instance.verificationCount,
       'created_at': instance.createdAt?.toIso8601String(),
       'image_url': instance.imageUrl,
+      'images': instance.images,
+    };
+
+_$IssueImageImpl _$$IssueImageImplFromJson(Map<String, dynamic> json) =>
+    _$IssueImageImpl(
+      id: json['id'] as String,
+      imageUrl: json['image_url'] as String,
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
+    );
+
+Map<String, dynamic> _$$IssueImageImplToJson(_$IssueImageImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'image_url': instance.imageUrl,
+      'created_at': instance.createdAt?.toIso8601String(),
     };

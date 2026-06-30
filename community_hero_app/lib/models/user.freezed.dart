@@ -23,6 +23,7 @@ mixin _$User {
   String get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
   String? get name => throw _privateConstructorUsedError;
+  @JsonKey(name: 'reputation_score')
   int get reputationScore => throw _privateConstructorUsedError;
   int get level => throw _privateConstructorUsedError;
 
@@ -41,7 +42,11 @@ abstract class $UserCopyWith<$Res> {
       _$UserCopyWithImpl<$Res, User>;
   @useResult
   $Res call(
-      {String id, String email, String? name, int reputationScore, int level});
+      {String id,
+      String email,
+      String? name,
+      @JsonKey(name: 'reputation_score') int reputationScore,
+      int level});
 }
 
 /// @nodoc
@@ -98,7 +103,11 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {String id, String email, String? name, int reputationScore, int level});
+      {String id,
+      String email,
+      String? name,
+      @JsonKey(name: 'reputation_score') int reputationScore,
+      int level});
 }
 
 /// @nodoc
@@ -151,7 +160,7 @@ class _$UserImpl implements _User {
       {required this.id,
       required this.email,
       this.name,
-      this.reputationScore = 0,
+      @JsonKey(name: 'reputation_score') this.reputationScore = 0,
       this.level = 1});
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
@@ -164,7 +173,7 @@ class _$UserImpl implements _User {
   @override
   final String? name;
   @override
-  @JsonKey()
+  @JsonKey(name: 'reputation_score')
   final int reputationScore;
   @override
   @JsonKey()
@@ -214,7 +223,7 @@ abstract class _User implements User {
       {required final String id,
       required final String email,
       final String? name,
-      final int reputationScore,
+      @JsonKey(name: 'reputation_score') final int reputationScore,
       final int level}) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
@@ -226,6 +235,7 @@ abstract class _User implements User {
   @override
   String? get name;
   @override
+  @JsonKey(name: 'reputation_score')
   int get reputationScore;
   @override
   int get level;
