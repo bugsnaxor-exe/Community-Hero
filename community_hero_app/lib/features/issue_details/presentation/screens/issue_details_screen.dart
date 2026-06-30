@@ -25,7 +25,7 @@ class IssueDetailsScreen extends ConsumerWidget {
   }
 
   void _shareIssue(Issue issue) {
-    final text = 'Check out this issue on Community Hero: ${issue.title} (${issue.category})\nLocation: ${issue.latitude}, ${issue.longitude}';
+    final text = 'Check out this issue on Sync City: ${issue.title} (${issue.category})\nLocation: ${issue.latitude}, ${issue.longitude}';
     Share.share(text);
   }
 

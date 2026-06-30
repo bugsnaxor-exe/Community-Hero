@@ -19,7 +19,7 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Community Hero',
+          'Sync City',
           style: TextStyle(
             color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
             fontWeight: FontWeight.bold,

@@ -12,7 +12,7 @@ class LeaderboardWidget extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Text('Top Community Heroes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          child: Text('Top Sync Citizens', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ),
         if (leaderboard.isEmpty)
           const Padding(

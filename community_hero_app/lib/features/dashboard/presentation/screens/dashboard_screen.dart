@@ -42,7 +42,7 @@ class DashboardScreen extends ConsumerWidget {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Community Hero',
+                                    'Sync City',
                                     style: TextStyle(
                                       color: Theme.of(context).colorScheme.onSurface,
                                       fontSize: 28,
@@ -62,7 +62,7 @@ class DashboardScreen extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Community Hero',
+                              'Sync City',
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 28,

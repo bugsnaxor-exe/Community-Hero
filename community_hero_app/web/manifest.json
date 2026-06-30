@@ -1,11 +1,11 @@
 {
-    "name": "community_hero_app",
-    "short_name": "community_hero_app",
+    "name": "Sync City",
+    "short_name": "Sync City",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "A civic issue reporting and community coordination platform.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
