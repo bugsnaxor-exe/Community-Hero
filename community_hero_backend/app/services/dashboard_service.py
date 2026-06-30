@@ -20,7 +20,7 @@ class DashboardService:
             func.extract('epoch', Issue.updated_at) - func.extract('epoch', Issue.created_at)
         )).filter(Issue.status == IssueStatus.RESOLVED).scalar()
         
-        avg_hours = (avg_seconds / 3600.0) if avg_seconds else None
+        avg_hours = (float(avg_seconds) / 3600.0) if avg_seconds else None
         
         return {
             "total_issues": total,
