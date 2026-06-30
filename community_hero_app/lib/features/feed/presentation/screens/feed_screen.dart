@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/feed_controller.dart';
 import '../../../home/presentation/widgets/issue_card.dart';
+import '../../../widgets/app_background.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -47,11 +48,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final feedStateAsync = ref.watch(feedControllerProvider);
     final activeFilter = ref.watch(feedCategoryFilterProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Issue Feed'),
-        leading: BackButton(onPressed: () => context.go('/home')),
-        bottom: PreferredSize(
+    return AppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: const Text('Issue Feed'),
+          leading: BackButton(onPressed: () => context.go('/home')),
+          bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: SizedBox(
             height: 60,
