@@ -20,14 +20,14 @@ router = APIRouter()
 
 @router.post("/", response_model=IssueResponse)
 def create_issue(
-    title: Optional[str] = Form("Unknown Title"),
     category: str = Form(...),
-    description: str = Form(""),
     latitude: float = Form(...),
     longitude: float = Form(...),
+    background_tasks: BackgroundTasks,
+    title: Optional[str] = Form("Unknown Title"),
+    description: str = Form(""),
     severity: str = Form("Low"),
     images: List[UploadFile] = File(default=[]),
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
