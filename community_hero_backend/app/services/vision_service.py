@@ -36,6 +36,18 @@ def analyze_issue_image(image_path: str) -> dict:
         base64_image = encode_image_to_base64(image_path)
         logger.info(f"Analyzing image: {image_path} (base64 length: {len(base64_image)})")
 
+        # Determine MIME type from file extension
+        ext = image_path.rsplit(".", 1)[-1].lower() if "." in image_path else "jpg"
+        mime_map = {
+            "jpg": "image/jpeg", "jpeg": "image/jpeg", "jfif": "image/jpeg",
+            "pjpeg": "image/jpeg", "pjp": "image/jpeg",
+            "png": "image/png", "webp": "image/webp",
+            "heic": "image/heic", "heif": "image/heif",
+            "gif": "image/gif", "bmp": "image/bmp",
+            "tiff": "image/tiff", "avif": "image/avif",
+        }
+        mime_type = mime_map.get(ext, "image/jpeg")
+
         prompt = """You are a strict image validator for a civic issue reporting app. Analyze this image and return RAW JSON only (no markdown, no backticks, no extra text).
 
 JSON format:
@@ -70,7 +82,7 @@ Return ONLY the JSON object, nothing else."""
                                 {
                                     "type": "image_url",
                                     "image_url": {
-                                        "url": f"data:image/jpeg;base64,{base64_image}"
+                                        "url": f"data:{mime_type};base64,{base64_image}"
                                     }
                                 }
                             ]

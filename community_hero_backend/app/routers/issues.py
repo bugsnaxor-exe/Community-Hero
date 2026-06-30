@@ -114,7 +114,7 @@ def create_issue(
     upload_dir = "static/uploads"
     os.makedirs(upload_dir, exist_ok=True)
     
-    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "heic", "heif", "gif", "bmp", "tiff", "svg"}
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "jfif", "pjpeg", "pjp", "png", "webp", "heic", "heif", "gif", "bmp", "tiff", "avif"}
     MAX_FILE_SIZE = 10 * 1024 * 1024 # 10 MB
 
     saved_paths = []
@@ -125,6 +125,8 @@ def create_issue(
             mime_to_ext = {
                 "image/jpeg": "jpg",
                 "image/jpg": "jpg",
+                "image/jfif": "jfif",
+                "image/pjpeg": "jpg",
                 "image/png": "png",
                 "image/webp": "webp",
                 "image/heic": "heic",
@@ -132,6 +134,7 @@ def create_issue(
                 "image/gif": "gif",
                 "image/bmp": "bmp",
                 "image/tiff": "tiff",
+                "image/avif": "avif",
             }
             content_type_ext = ""
             if file.content_type and file.content_type.startswith("image/"):
