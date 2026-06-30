@@ -71,8 +71,13 @@ def create_issue(
         lng=longitude
     )
 
-    # --- Duplicate Detection ---
-    duplicate = DuplicateDetectionService.find_duplicate(db, issue_in, radius_meters=15.0, similarity_threshold=0.8)
+    # --- Duplicate Detection (same reporter only, 10m radius, 90% similarity) ---
+    duplicate = DuplicateDetectionService.find_duplicate(
+        db, issue_in,
+        reporter_id=current_user.id,
+        radius_meters=10.0,
+        similarity_threshold=0.9
+    )
     if duplicate:
         raise HTTPException(
             status_code=409, 
