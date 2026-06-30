@@ -555,7 +555,8 @@ class _RecentActivityList extends ConsumerWidget {
       itemBuilder: (context, index) {
         final item = activities[index];
         final category = item['category'] as String? ?? 'Other';
-        final status = item['status'] as String? ?? 'Pending';
+        final status = item['status'] as String? ?? 'REPORTED';
+        final isResolved = status.toUpperCase() == 'RESOLVED';
         final title = item['title'] as String? ?? 'Community Issue';
         final dateStr = item['created_at'] as String?;
 
