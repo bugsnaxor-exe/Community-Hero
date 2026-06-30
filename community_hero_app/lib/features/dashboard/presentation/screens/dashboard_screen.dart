@@ -604,37 +604,35 @@ class _RecentActivityList extends ConsumerWidget {
                       timeStr,
                       style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                     ),
-                    if (status.toLowerCase() != 'resolved') ...[
-                      const SizedBox(height: 8),
-                      InkWell(
-                        onTap: () {
-                          final id = item['id'];
-                          if (id != null) {
-                            ref.read(dashboardControllerProvider.notifier).resolveIssue(id);
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.check_circle_outline, color: Colors.green, size: 14),
-                              SizedBox(width: 4),
-                              Text(
-                                'Mark Resolved',
-                                style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () {
+                        final id = item['id'];
+                        if (id != null) {
+                          ref.read(dashboardControllerProvider.notifier).toggleIssueStatus(id, isResolved);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isResolved ? Colors.orange.withValues(alpha: 0.2) : Colors.green.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isResolved ? Colors.orange.withValues(alpha: 0.5) : Colors.green.withValues(alpha: 0.5)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(isResolved ? Icons.undo : Icons.check_circle_outline, color: isResolved ? Colors.orange : Colors.green, size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              isResolved ? 'Mark Unresolved' : 'Mark Resolved',
+                              style: TextStyle(color: isResolved ? Colors.orange : Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ],

@@ -11,9 +11,10 @@ class DashboardController extends AutoDisposeAsyncNotifier<Map<String, dynamic>>
     return repository.getDashboardAnalytics();
   }
 
-  Future<void> resolveIssue(dynamic issueId) async {
+  Future<void> toggleIssueStatus(dynamic issueId, bool isResolved) async {
     final repository = ref.read(dashboardRepositoryProvider);
-    await repository.resolveIssue(issueId);
+    final newStatus = isResolved ? 'REPORTED' : 'RESOLVED';
+    await repository.updateIssueStatus(issueId, newStatus);
     ref.invalidateSelf();
     ref.invalidate(home_providers.nearbyIssuesProvider);
     ref.invalidate(feed_providers.feedControllerProvider);

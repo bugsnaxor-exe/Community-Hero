@@ -169,34 +169,33 @@ class NearbyIssuesSidebar extends ConsumerWidget {
                                             ],
                                           ),
                                         ),
-                                        if (issue.status.toLowerCase() != 'resolved') ...[
                                           const SizedBox(width: 8),
                                           InkWell(
                                             onTap: () {
-                                              ref.read(dashboardControllerProvider.notifier).resolveIssue(issue.id);
+                                              final isResolved = issue.status.toLowerCase() == 'resolved';
+                                              ref.read(dashboardControllerProvider.notifier).toggleIssueStatus(issue.id, isResolved);
                                             },
                                             borderRadius: BorderRadius.circular(12),
                                             child: Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                               decoration: BoxDecoration(
-                                                color: Colors.green.withValues(alpha: 0.2),
+                                                color: (issue.status.toLowerCase() == 'resolved') ? Colors.orange.withValues(alpha: 0.2) : Colors.green.withValues(alpha: 0.2),
                                                 borderRadius: BorderRadius.circular(12),
-                                                border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
+                                                border: Border.all(color: (issue.status.toLowerCase() == 'resolved') ? Colors.orange.withValues(alpha: 0.5) : Colors.green.withValues(alpha: 0.5)),
                                               ),
-                                              child: const Row(
+                                              child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Icon(Icons.check_circle_outline, color: Colors.green, size: 10),
-                                                  SizedBox(width: 4),
+                                                  Icon((issue.status.toLowerCase() == 'resolved') ? Icons.undo : Icons.check_circle_outline, color: (issue.status.toLowerCase() == 'resolved') ? Colors.orange : Colors.green, size: 10),
+                                                  const SizedBox(width: 4),
                                                   Text(
-                                                    'Resolve',
-                                                    style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                                                    (issue.status.toLowerCase() == 'resolved') ? 'Reopen' : 'Resolve',
+                                                    style: TextStyle(color: (issue.status.toLowerCase() == 'resolved') ? Colors.orange : Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
                                                   ),
                                                 ],
                                               ),
                                             ),
                                           ),
-                                        ],
                                       ],
                                     )
                                   ],
