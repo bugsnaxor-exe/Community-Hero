@@ -1,7 +1,7 @@
 import os
 import shutil
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
@@ -27,6 +27,7 @@ def create_issue(
     longitude: float = Form(...),
     severity: str = Form("Low"),
     images: List[UploadFile] = File(default=[]),
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -154,8 +155,9 @@ def create_issue(
                 db.commit()
                 db.refresh(new_issue)
 
-        # 3. Send email submission notification to the specified address
-        send_issue_email(
+        # 3. Send email submission notification in the background
+        background_tasks.add_task(
+            send_issue_email,
             to_email="sayantan05092004@gmail.com",
             title=title,
             description=description,

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../widgets/bounce_button.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/report_controller.dart';
+import '../../../../services/location_service.dart';
 
 class ReportScreen extends ConsumerStatefulWidget {
   const ReportScreen({super.key});
@@ -18,6 +19,9 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _latController = TextEditingController();
+  final _lngController = TextEditingController();
+  bool _fetchingLocation = false;
   
   String _selectedCategory = 'Pothole';
   String _selectedSeverity = 'Medium';
@@ -30,10 +34,54 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   final List<String> _severities = ['Low', 'Medium', 'High', 'Critical'];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchCurrentLocation();
+    });
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _latController.dispose();
+    _lngController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchCurrentLocation() async {
+    if (!mounted) return;
+    setState(() {
+      _fetchingLocation = true;
+    });
+    try {
+      final locationService = ref.read(locationServiceProvider);
+      final position = await locationService.getCurrentLocation();
+      if (!mounted) return;
+      setState(() {
+        _latController.text = position.latitude.toStringAsFixed(6);
+        _lngController.text = position.longitude.toStringAsFixed(6);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('GPS Location fetched successfully!'), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      );
+      setState(() {
+        if (_latController.text.isEmpty) _latController.text = "22.5726";
+        if (_lngController.text.isEmpty) _lngController.text = "88.3639";
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _fetchingLocation = false;
+        });
+      }
+    }
   }
 
   void _showImageSourceBottomSheet() {
@@ -165,11 +213,29 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     }
 
     if (_formKey.currentState!.validate()) {
+      final lat = double.tryParse(_latController.text.trim());
+      final lng = double.tryParse(_lngController.text.trim());
+      
+      if (lat == null || lat < -90 || lat > 90) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid Latitude (-90 to 90)'), backgroundColor: Colors.red),
+        );
+        return;
+      }
+      if (lng == null || lng < -180 || lng > 180) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid Longitude (-180 to 180)'), backgroundColor: Colors.red),
+        );
+        return;
+      }
+
       final success = await ref.read(reportControllerProvider.notifier).submitReport(
             title: _titleController.text.trim(),
             description: _descriptionController.text.trim(),
             category: _selectedCategory,
             severity: _selectedSeverity,
+            latitude: lat,
+            longitude: lng,
             images: _images,
           );
           
@@ -416,6 +482,79 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                     decoration: const InputDecoration(labelText: 'Description', hintText: 'Provide more details...'),
                     maxLines: 4,
                     validator: (value) => value == null || value.isEmpty ? 'Description is required' : null,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Location Coordinates',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: _fetchingLocation ? null : _fetchCurrentLocation,
+                        icon: _fetchingLocation 
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.my_location, size: 18),
+                        label: Text(_fetchingLocation ? 'Fetching...' : 'Locate Me'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _latController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(
+                            labelText: 'Latitude',
+                            hintText: 'E.g., 22.5726',
+                            prefixIcon: Icon(Icons.map_outlined),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Required';
+                            }
+                            final val = double.tryParse(value);
+                            if (val == null || val < -90 || val > 90) {
+                              return 'Invalid (-90 to 90)';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _lngController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(
+                            labelText: 'Longitude',
+                            hintText: 'E.g., 88.3639',
+                            prefixIcon: Icon(Icons.map_outlined),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Required';
+                            }
+                            final val = double.tryParse(value);
+                            if (val == null || val < -180 || val > 180) {
+                              return 'Invalid (-180 to 180)';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 32),
                   
