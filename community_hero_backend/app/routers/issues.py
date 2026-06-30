@@ -20,10 +20,10 @@ router = APIRouter()
 
 @router.post("/", response_model=IssueResponse)
 def create_issue(
+    background_tasks: BackgroundTasks,
     category: str = Form(...),
     latitude: float = Form(...),
     longitude: float = Form(...),
-    background_tasks: BackgroundTasks,
     title: Optional[str] = Form("Unknown Title"),
     description: str = Form(""),
     severity: str = Form("Low"),
