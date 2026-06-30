@@ -22,7 +22,10 @@ class IssueCard extends StatelessWidget {
   }
 
   String _getTimeAgo(DateTime dateTime) {
-    final difference = DateTime.now().difference(dateTime);
+    String ds = dateTime.toIso8601String();
+    if (!ds.endsWith('Z')) ds += 'Z';
+    final date = DateTime.parse(ds).toLocal();
+    final difference = DateTime.now().difference(date);
     if (difference.inDays > 0) return '${difference.inDays}d ago';
     if (difference.inHours > 0) return '${difference.inHours}h ago';
     if (difference.inMinutes > 0) return '${difference.inMinutes}m ago';

@@ -32,16 +32,16 @@ final nearbyIssuesProvider = FutureProvider<List<Issue>>((ref) async {
     latitude = position.latitude;
     longitude = position.longitude;
   } catch (e) {
-    // 2. Fallback to default coordinates if GPS fails (Kolkata, India)
-    latitude = 22.5726;
-    longitude = 88.3639;
+    // 2. Fallback to default coordinates if GPS fails (near test issues)
+    latitude = 24.175;
+    longitude = 87.786;
   }
   
-  // 3. Fetch issues around this location within a 5km radius
+  // 3. Fetch issues around this location within a 500km radius (for demo visibility)
   final response = await dio.get('/issues/nearby', queryParameters: {
     'lat': latitude,
     'lng': longitude,
-    'radius': 5, // 5 km
+    'radius': 500, // 500 km
   });
   
   final List<dynamic> data = response.data;

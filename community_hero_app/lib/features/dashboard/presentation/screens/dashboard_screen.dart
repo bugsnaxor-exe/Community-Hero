@@ -499,7 +499,10 @@ class _RecentActivityList extends ConsumerWidget {
   String _getRelativeTime(String? dateStr) {
     if (dateStr == null) return 'Just now';
     try {
-      final date = DateTime.parse(dateStr);
+      if (!dateStr.endsWith('Z') && !dateStr.contains(RegExp(r'[+-]\d{2}:\d{2}$'))) {
+        dateStr += 'Z';
+      }
+      final date = DateTime.parse(dateStr).toLocal();
       final diff = DateTime.now().difference(date);
       if (diff.inDays > 0) {
         return '${diff.inDays}d ago';

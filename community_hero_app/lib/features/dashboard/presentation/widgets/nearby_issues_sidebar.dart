@@ -66,7 +66,10 @@ class NearbyIssuesSidebar extends ConsumerWidget {
                       // Calculate time ago
                       String timeAgo = 'Just now';
                       if (issue.createdAt != null) {
-                        final diff = DateTime.now().difference(issue.createdAt!);
+                        String ds = issue.createdAt!.toIso8601String();
+                        if (!ds.endsWith('Z')) ds += 'Z';
+                        final date = DateTime.parse(ds).toLocal();
+                        final diff = DateTime.now().difference(date);
                         if (diff.inDays > 0) {
                           timeAgo = '${diff.inDays}d ago';
                         } else if (diff.inHours > 0) {
