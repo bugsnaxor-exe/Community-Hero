@@ -3,7 +3,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../widgets/glassmorphism/glass_container.dart';
 import '../../../../models/issue.dart';
 
-class NearbyIssuesSidebar extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../home/presentation/providers/home_providers.dart';
+
+class NearbyIssuesSidebar extends ConsumerWidget {
   const NearbyIssuesSidebar({super.key});
 
   @override
@@ -13,12 +16,7 @@ class NearbyIssuesSidebar extends StatelessWidget {
     final subtextColor = isDark ? Colors.white70 : Colors.black54;
     final hintColor = isDark ? Colors.white38 : Colors.black38;
 
-    // Mock data for UI layout
-    final issues = [
-      Issue(id: '1', title: 'Pothole on Elm St', description: '', category: 'Infrastructure', severity: 'High', latitude: 0, longitude: 0, status: 'Open', createdAt: DateTime.now()),
-      Issue(id: '2', title: 'Park Cleanup', description: '', category: 'Environment', severity: 'Low', latitude: 0, longitude: 0, status: 'Resolved', createdAt: DateTime.now()),
-      Issue(id: '3', title: 'Streetlight Out', description: '', category: 'Infrastructure', severity: 'Medium', latitude: 0, longitude: 0, status: 'Open', createdAt: DateTime.now()),
-    ];
+    final nearbyIssuesAsync = ref.watch(nearbyIssuesProvider);
 
     return Container(
       width: 300,
@@ -52,102 +50,134 @@ class NearbyIssuesSidebar extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView.separated(
-                itemCount: issues.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final issue = issues[index];
-                  return InkWell(
-                    onTap: () => context.push('/issue-details/${issue.id}'),
-                    borderRadius: BorderRadius.circular(16),
-                    child: GlassContainer(
-                      borderRadius: 16,
-                      padding: const EdgeInsets.all(12),
-                      blurX: 5,
-                      blurY: 5,
-                      opacity: isDark ? 0.1 : 0.4,
-                      backgroundColor: Colors.white,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(Icons.map, color: subtextColor),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        issue.title,
-                                        style: TextStyle(
-                                          color: textColor,
-                                          fontWeight: FontWeight.w600,
+              child: nearbyIssuesAsync.when(
+                data: (issues) {
+                  if (issues.isEmpty) {
+                    return Center(
+                      child: Text('No nearby issues', style: TextStyle(color: hintColor)),
+                    );
+                  }
+                  return ListView.separated(
+                    itemCount: issues.length > 5 ? 5 : issues.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final issue = issues[index];
+                      // Calculate time ago
+                      String timeAgo = 'Just now';
+                      if (issue.createdAt != null) {
+                        final diff = DateTime.now().difference(issue.createdAt!);
+                        if (diff.inDays > 0) {
+                          timeAgo = '${diff.inDays}d ago';
+                        } else if (diff.inHours > 0) {
+                          timeAgo = '${diff.inHours}h ago';
+                        } else if (diff.inMinutes > 0) {
+                          timeAgo = '${diff.inMinutes}m ago';
+                        }
+                      }
+                      
+                      return InkWell(
+                        onTap: () => context.push('/issue-details/${issue.id}'),
+                        borderRadius: BorderRadius.circular(16),
+                        child: GlassContainer(
+                          borderRadius: 16,
+                          padding: const EdgeInsets.all(12),
+                          blurX: 5,
+                          blurY: 5,
+                          opacity: isDark ? 0.1 : 0.4,
+                          backgroundColor: Colors.white,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: issue.imageUrl != null && issue.imageUrl!.isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.network(
+                                          issue.imageUrl!.startsWith('http') ? issue.imageUrl! : 'https://community-hero.onrender.com${issue.imageUrl!}',
+                                          fit: BoxFit.cover,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    : Icon(Icons.map, color: subtextColor),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            issue.title,
+                                            style: TextStyle(
+                                              color: textColor,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Icon(Icons.more_horiz, color: hintColor, size: 16),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '- $timeAgo',
+                                      style: TextStyle(
+                                        color: subtextColor,
+                                        fontSize: 12,
                                       ),
                                     ),
-                                    Icon(Icons.more_horiz, color: hintColor, size: 16),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: issue.status.toLowerCase() == 'resolved' 
+                                            ? Colors.blue.withValues(alpha: 0.2) 
+                                            : Colors.green.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 6,
+                                            height: 6,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: issue.status.toLowerCase() == 'resolved' ? Colors.blue : Colors.green,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            issue.status,
+                                            style: TextStyle(
+                                              color: issue.status.toLowerCase() == 'resolved' ? Colors.blue : Colors.green,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
                                   ],
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '- ${index + 1}h ago',
-                                  style: TextStyle(
-                                    color: subtextColor,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: issue.status == 'Resolved' 
-                                        ? Colors.blue.withValues(alpha: 0.2) 
-                                        : Colors.green.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 6,
-                                        height: 6,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: issue.status == 'Resolved' ? Colors.blue : Colors.green,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Status',
-                                        style: TextStyle(
-                                          color: issue.status == 'Resolved' ? Colors.blue : Colors.green,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   );
                 },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, st) => Center(child: Text('Error loading issues', style: TextStyle(color: Colors.red.withValues(alpha: 0.7)))),
               ),
             ),
           ],

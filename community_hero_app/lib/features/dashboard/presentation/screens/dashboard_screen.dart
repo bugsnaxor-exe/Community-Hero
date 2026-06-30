@@ -7,6 +7,7 @@ import '../../../../widgets/glassmorphism/neon_card.dart';
 import '../widgets/nearby_issues_sidebar.dart';
 import '../providers/dashboard_controller.dart';
 import '../../../../theme/theme_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -559,45 +560,49 @@ class _RecentActivityList extends StatelessWidget {
         final color = _getColorForCategory(category);
         final timeStr = _getRelativeTime(dateStr);
 
-        return GlassContainer(
-          borderRadius: 16,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          blurX: 10,
-          blurY: 10,
-          opacity: 0.05,
-          backgroundColor: itemBgColor,
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+        return InkWell(
+          onTap: () => context.push('/issue-details/${item['id']}'),
+          borderRadius: BorderRadius.circular(16),
+          child: GlassContainer(
+            borderRadius: 16,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            blurX: 10,
+            blurY: 10,
+            opacity: 0.05,
+            backgroundColor: itemBgColor,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
                 ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Status: $status | Category: $category',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
-                    ),
-                  ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Status: $status | Category: $category',
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Text(
-                timeStr,
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
-              ),
-            ],
+                Text(
+                  timeStr,
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
+                ),
+              ],
+            ),
           ),
         );
       },
