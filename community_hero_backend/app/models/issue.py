@@ -45,6 +45,12 @@ class Issue(BaseModel):
     images = relationship("IssueImage", back_populates="issue")
     verifications = relationship("IssueVerification", back_populates="issue")
     history = relationship("StatusHistory", back_populates="issue")
+    
+    @property
+    def image_url(self):
+        if self.images:
+            return self.images[0].image_url
+        return None
 
 class IssueImage(BaseModel):
     __tablename__ = "issue_images"

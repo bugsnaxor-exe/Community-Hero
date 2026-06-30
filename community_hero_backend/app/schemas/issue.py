@@ -30,6 +30,8 @@ class IssueResponse(BaseModel):
     ai_confidence: Optional[float] = None
     severity: Optional[str] = None
     ai_reasoning: Optional[str] = None
+    created_at: datetime
+    image_url: Optional[str] = None
     
     @field_validator('severity', mode='before')
     @classmethod
