@@ -30,10 +30,18 @@ class DuplicateDetectionService:
             safe_distance_expr < radius_meters
         ).all()
         
-        desc1 = (new_issue.description or "").lower()
+        desc1 = (new_issue.description or "").strip()
+        # Only check duplicate if the description is substantial (>= 15 characters)
+        if len(desc1) < 15:
+            return None
+            
+        desc1_lower = desc1.lower()
         for issue in nearby_issues:
-            desc2 = (issue.description or "").lower()
-            similarity = difflib.SequenceMatcher(None, desc1, desc2).ratio()
+            desc2 = (issue.description or "").strip()
+            if len(desc2) < 15:
+                continue
+            desc2_lower = desc2.lower()
+            similarity = difflib.SequenceMatcher(None, desc1_lower, desc2_lower).ratio()
             if similarity >= similarity_threshold:
                 return issue
                 

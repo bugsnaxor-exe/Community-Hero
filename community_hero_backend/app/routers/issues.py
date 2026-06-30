@@ -72,7 +72,7 @@ def create_issue(
     )
 
     # --- Duplicate Detection ---
-    duplicate = DuplicateDetectionService.find_duplicate(db, issue_in, radius_meters=50.0, similarity_threshold=0.8)
+    duplicate = DuplicateDetectionService.find_duplicate(db, issue_in, radius_meters=15.0, similarity_threshold=0.8)
     if duplicate:
         raise HTTPException(
             status_code=409, 
@@ -109,17 +109,25 @@ def create_issue(
     upload_dir = "static/uploads"
     os.makedirs(upload_dir, exist_ok=True)
     
-    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "heic", "heif", "gif", "bmp", "tiff", "svg"}
     MAX_FILE_SIZE = 10 * 1024 * 1024 # 10 MB
 
     saved_paths = []
     try:
         for file in valid_images:
-            file_extension = file.filename.split(".")[-1].lower()
-            if file_extension not in ALLOWED_EXTENSIONS:
+            # Check content_type first
+            is_image_content = False
+            if file.content_type and file.content_type.startswith("image/"):
+                is_image_content = True
+                
+            file_extension = ""
+            if "." in file.filename:
+                file_extension = file.filename.split(".")[-1].lower()
+                
+            if not is_image_content and (not file_extension or file_extension not in ALLOWED_EXTENSIONS):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"File type '{file_extension}' not allowed. Allowed types are: jpg, jpeg, png."
+                    detail=f"File type '{file_extension}' not allowed. Please upload a valid image file (JPEG, PNG, WEBP, HEIC, etc.)."
                 )
 
             # Check file size by seeking
