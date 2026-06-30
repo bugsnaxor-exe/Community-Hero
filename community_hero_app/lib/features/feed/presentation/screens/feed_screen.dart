@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/feed_controller.dart';
 import '../../../home/presentation/widgets/issue_card.dart';
-import '../../../widgets/app_background.dart';
+import '../../../../widgets/app_background.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -140,6 +140,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           ),
         ),
       ),
-    );
+      ),
+    ));
   }
 }

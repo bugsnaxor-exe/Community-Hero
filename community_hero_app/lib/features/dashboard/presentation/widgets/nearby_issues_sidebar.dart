@@ -4,13 +4,13 @@ import '../../../../widgets/glassmorphism/glass_container.dart';
 import '../../../../models/issue.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../home/presentation/providers/home_providers.dart';
+import '../../../home/presentation/providers/home_providers.dart';
 
 class NearbyIssuesSidebar extends ConsumerWidget {
   const NearbyIssuesSidebar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     final subtextColor = isDark ? Colors.white70 : Colors.black54;
