@@ -48,6 +48,36 @@ class AuthController extends AsyncNotifier<void> {
     }
   }
 
+  Future<bool> forgotPassword(String email) async {
+    state = const AsyncValue.loading();
+    try {
+      await _authRepository.forgotPassword(email);
+      state = const AsyncValue.data(null);
+      return true;
+    } on AppException catch (e) {
+      state = AsyncValue.error(e.message, StackTrace.current);
+      return false;
+    } catch (e, st) {
+      state = AsyncValue.error('An unexpected error occurred', st);
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String email, String code, String newPassword) async {
+    state = const AsyncValue.loading();
+    try {
+      await _authRepository.resetPassword(email, code, newPassword);
+      state = const AsyncValue.data(null);
+      return true;
+    } on AppException catch (e) {
+      state = AsyncValue.error(e.message, StackTrace.current);
+      return false;
+    } catch (e, st) {
+      state = AsyncValue.error('An unexpected error occurred', st);
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     state = const AsyncValue.loading();
     await _authRepository.logout();

@@ -70,6 +70,38 @@ class AuthRepository {
     }
   }
 
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400 || e.response?.statusCode == 404) {
+        throw AuthException(e.response?.data['detail'] ?? 'Failed to send reset code.');
+      }
+      throw NetworkException(e.message ?? 'An unknown network error occurred');
+    }
+  }
+
+  Future<void> resetPassword(String email, String code, String newPassword) async {
+    try {
+      await _dio.post(
+        '/auth/reset-password',
+        data: {
+          'email': email,
+          'code': code,
+          'new_password': newPassword,
+        },
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        throw AuthException(e.response?.data['detail'] ?? 'Invalid or expired code.');
+      }
+      throw NetworkException(e.message ?? 'An unknown network error occurred');
+    }
+  }
+
   Future<void> logout() async {
     await _secureStorage.delete(key: AppConstants.tokenKey);
     await _secureStorage.delete(key: AppConstants.userKey);
