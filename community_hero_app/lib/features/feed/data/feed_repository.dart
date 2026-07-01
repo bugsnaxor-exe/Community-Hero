@@ -27,7 +27,7 @@ class FeedRepository {
         queryParams['category'] = category;
       }
 
-      final response = await _dio.get('/issues', queryParameters: queryParams);
+      final response = await _dio.get('/issues/', queryParameters: queryParams);
       
       final List<dynamic> data = response.data;
       return data.map((json) => Issue.fromJson(json)).toList();

@@ -49,7 +49,7 @@ class ReportRepository {
       }
 
       final response = await _dio.post(
-        '/issues',
+        '/issues/',
         data: formData,
       );
 

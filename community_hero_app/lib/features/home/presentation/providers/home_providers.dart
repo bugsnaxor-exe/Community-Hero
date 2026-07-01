@@ -13,7 +13,7 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
 
 final recentIssuesProvider = FutureProvider<List<Issue>>((ref) async {
   final dio = ref.watch(dioProvider);
-  final response = await dio.get('/issues', queryParameters: {'limit': 10, 'sort': 'recent'});
+  final response = await dio.get('/issues/', queryParameters: {'limit': 10, 'sort': 'recent'});
   
   final List<dynamic> data = response.data;
   return data.map((json) => Issue.fromJson(json)).toList();
