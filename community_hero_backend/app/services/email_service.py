@@ -31,6 +31,7 @@ Title: {title or 'N/A'}
 Category: {category}
 Severity: {severity}
 Location Coordinates: {latitude}, {longitude}
+View on Google Maps: https://www.google.com/maps?q={latitude},{longitude}
 Description: {description}
 Reporter Account: {reporter_email}
 """
