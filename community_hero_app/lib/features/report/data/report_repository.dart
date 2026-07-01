@@ -57,17 +57,24 @@ class ReportRepository {
         throw AppException('Failed to submit report. Please try again.');
       }
     } on DioException catch (e) {
-      if (e.response != null) {
-        final detail = e.response?.data['detail'];
-        String errorMsg = 'Submission failed.';
-        if (detail is String) {
-          errorMsg = detail;
-        } else if (detail is Map) {
-          errorMsg = detail['message']?.toString() ?? detail.toString();
-        } else if (detail != null) {
-          errorMsg = detail.toString();
+      if (e.response != null && e.response?.data != null) {
+        final data = e.response?.data;
+        if (data is Map) {
+          final detail = data['detail'];
+          String errorMsg = 'Submission failed.';
+          if (detail is String) {
+            errorMsg = detail;
+          } else if (detail is Map) {
+            errorMsg = detail['message']?.toString() ?? detail.toString();
+          } else if (detail is List) {
+            errorMsg = detail.toString();
+          } else if (detail != null) {
+            errorMsg = detail.toString();
+          }
+          throw AppException(errorMsg);
+        } else if (data is String) {
+           throw AppException('Server error: ${e.response?.statusCode}');
         }
-        throw AppException(errorMsg);
       }
       throw NetworkException(e.message ?? 'An unknown network error occurred');
     }

@@ -119,9 +119,18 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     List<XFile> pickedFiles = [];
     
     if (source == ImageSource.gallery) {
-      pickedFiles = await picker.pickMultiImage(imageQuality: 80);
+      pickedFiles = await picker.pickMultiImage(
+        imageQuality: 70,
+        maxWidth: 1024,
+        maxHeight: 1024,
+      );
     } else {
-      final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
+      final pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 70,
+        maxWidth: 1024,
+        maxHeight: 1024,
+      );
       if (pickedFile != null) pickedFiles.add(pickedFile);
     }
     
