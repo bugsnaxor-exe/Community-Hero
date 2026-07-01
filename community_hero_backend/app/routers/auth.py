@@ -34,3 +34,49 @@ def login(login_data: UserLogin, db: Session = Depends(get_db)):
         
     access_token = create_access_token(subject=str(user.id))
     return {"access_token": access_token, "token_type": "bearer"}
+
+import random
+import string
+from datetime import datetime, timedelta, timezone
+from app.schemas.user import ForgotPasswordRequest, ResetPasswordRequest
+from app.services.email_service import send_reset_password_email
+
+@router.post("/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        # Return 200 even if user not found to prevent email enumeration
+        return {"message": "If an account with that email exists, a password reset code has been sent."}
+    
+    # Generate 6-digit code
+    code = ''.join(random.choices(string.digits, k=6))
+    
+    # Save code to user model
+    user.reset_code = code
+    user.reset_code_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+    db.commit()
+    
+    # Send email
+    send_reset_password_email(to_email=user.email, code=code)
+    
+    return {"message": "If an account with that email exists, a password reset code has been sent."}
+
+@router.post("/reset-password")
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid request")
+        
+    if not user.reset_code or user.reset_code != request.code:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+        
+    if not user.reset_code_expires or user.reset_code_expires.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+        
+    # Valid code, reset password
+    user.password_hash = get_password_hash(request.new_password)
+    user.reset_code = None
+    user.reset_code_expires = None
+    db.commit()
+    
+    return {"message": "Password successfully reset"}

@@ -135,3 +135,80 @@ Reporter Account: {reporter_email}
     except Exception as e:
         logger.error(f"Failed to send email via SMTP: {e}")
         return False
+
+def send_reset_password_email(to_email: str, code: str) -> bool:
+    subject = "[Community Hero] Password Reset Verification Code"
+    body = f"""You have requested to reset your password.
+    
+Please use the following 6-digit verification code to reset your password:
+
+{code}
+
+If you did not request this, please ignore this email. This code will expire in 15 minutes.
+"""
+    
+    # Try sending via Resend HTTP API first if configured
+    resend_api_key = getattr(settings, "RESEND_API_KEY", "")
+    if resend_api_key:
+        try:
+            import urllib.request
+            import json
+            payload = {
+                "from": "Community Hero <onboarding@resend.dev>",
+                "to": [to_email],
+                "subject": subject,
+                "text": body
+            }
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "Mozilla/5.0"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=15) as response:
+                if response.getcode() in [200, 201]:
+                    logger.info(f"Password reset email sent via Resend API to {to_email}")
+                    return True
+        except Exception as e:
+            logger.error(f"Failed to send reset email via Resend API: {e}")
+
+    # Fallback to SMTP
+    smtp_host = getattr(settings, "SMTP_HOST", "")
+    smtp_port = getattr(settings, "SMTP_PORT", 587)
+    smtp_user = getattr(settings, "SMTP_USER", "")
+    smtp_password = getattr(settings, "SMTP_PASSWORD", "")
+
+    if not smtp_host or not smtp_user or not smtp_password:
+        logger.warning("=" * 60)
+        logger.warning("SMTP credentials not configured. Printing email content instead:")
+        logger.warning(f"To: {to_email}")
+        logger.warning(f"Subject: {subject}")
+        logger.warning(f"Body:\n{body}")
+        logger.warning("=" * 60)
+        return False
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+        if smtp_port == 465:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+            server.starttls()
+            
+        server.login(smtp_user, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        logger.info(f"Password reset email sent successfully via SMTP to {to_email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send reset email via SMTP: {e}")
+        return False
